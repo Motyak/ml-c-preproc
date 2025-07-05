@@ -1,0 +1,45 @@
+#pragma once
+
+#include "utils.mlp"
+#include "List.mlp"
+
+var ListIterator (list):{
+    var cur-pos 1
+
+    var advance ():{
+        var res subscript(list, cur-pos)
+        cur-pos += 1
+        res
+    }
+
+    var peek ():{
+        subscript(list, cur-pos)
+    }
+
+    '----------------
+
+    var dispatcher (msg_id):{
+        !tern(msg_id, advance, {
+            !tern(msg_id + -1, peek, {
+                print("ERR invalid msg_id in dispatcher: `" + msg_id + "`")
+                exit(1)
+            })
+        })
+    }
+
+    dispatcher
+}
+
+var advance {
+    var advance (list-it):{
+        list-it(0)()
+    }
+    curry(advance)
+}
+
+var peek {
+    var peek (list-it):{
+        list-it(1)()
+    }
+    curry(peek)
+}

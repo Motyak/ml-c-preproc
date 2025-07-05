@@ -1,0 +1,15 @@
+#pragma once
+
+#include "utils.mlp"
+
+var Pair (left, right):{
+    (selector):{selector(left, right)}
+}
+
+var left (pair):{
+    pair((left, right):{left})
+}
+
+var right (pair):{
+    pair((left, right):{right})
+}

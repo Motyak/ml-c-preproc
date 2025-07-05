@@ -1,0 +1,66 @@
+#pragma once
+
+#include "utils.mlp"
+#include "Pair.mlp"
+#include "Optional.mlp"
+
+var Pair? (left, right):{
+    Optional($true, Pair(left, right))
+}
+var END {
+    Optional($false, _)
+}
+
+var List {
+    var List-1+ _
+
+    var List (xs...):{
+        !tern($#varargs, END, {
+            List-1+(xs...)
+        })
+    }
+
+    List-1+ := (x, xs...):{
+        Pair?(x, List(xs...))
+    }
+
+    List
+}
+
+var subscript {
+    var err ():{
+        print("ERR not enough elements")
+        exit(1)
+    }
+
+    var subscript _
+    subscript := (list, nth):{
+        tern(none?(list), err(), {
+            var list some(list)
+            !tern(nth + -1, left(list), {
+                subscript(right(list), nth + -1)
+            })
+        })
+    }
+
+    subscript
+}
+
+var foreach {
+    var foreach _
+
+    foreach := (list, do):{
+        none?(list) || {
+            do(left(some(list)))
+            foreach(right(some(list)), do)
+        }
+    }
+
+    (foreach)
+}
+
+var size (list):{
+    var count 0
+    foreach(list, (_):{count += 1})
+    count
+}

@@ -1,0 +1,30 @@
+#include "ListIterator.mlp"
+
+var list List(3, 141, 59, 26)
+
+{
+    var it ListIterator(list)
+    var first advance(it)
+    print('first3, first)
+    var peeked peek(it)
+    print('peeked141, peeked)
+    var second advance(it)
+    print('second141, second)
+    var list-len size(list)
+    print('list-len4, list-len)
+}
+
+{
+    var new-it ListIterator(list)
+    var first advance(new-it)
+    print('first3, first)
+}
+
+```
+    using pipe to simulate "method call" syntax
+```
+{
+    var new-it ListIterator(list)
+    var first new-it |> advance()
+    print('first3, first)
+}
