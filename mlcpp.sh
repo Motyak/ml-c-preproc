@@ -1,21 +1,26 @@
 #!/bin/bash
 set -o errexit
 set -o pipefail
-shopt -s expand_aliases
+# set -o xtrace #debug
 
-alias cpp='cpp -w'
+if [ "$1" == -o ]; then
+    FILEOUT="$2"
+    [[ "$FILEOUT" =~ ^-$ ]] && FILEOUT="/dev/stdout"
+    FILEIN="$3"
+    ARGS="${@:4:$#-1}"
+else
+    FILEIN="$1"
+    FILEOUT="${1%.mlp}.ml"
+    ARGS="${@:2:$#-1}"
+fi
 
-ARGS="${@:1:$#-1}"
-FILE="${@:(-1)}"
-
-[[ "$FILE" =~ ".mlp"$ ]] || {
-    >&2 echo "Invalid file extension: \`${FILE##*.}\`"
+[[ "$FILEIN" =~ ".mlp"$ ]] || {
+    >&2 echo "Invalid file extension: \`${FILEIN##*.}\`"
     exit 1
 }
 
-cat /dev/null > "${FILE%.mlp}.ml"
-cpp $ARGS "$FILE" \
+cpp -w $ARGS "$FILEIN" \
     | perl -0pe 's/^package main\n.*?\n# /# /gms' \
     | perl -pe 's/^package [^ ]+$//gm' \
     | perl -pe 's/^# \d.*\n//gm' \
-    | perl -ne 'print unless s/^ +$//' >> "${FILE%.mlp}.ml"
+    | perl -ne 'print unless s/^ +$//' > "$FILEOUT"
