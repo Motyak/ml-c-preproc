@@ -1,14 +1,6 @@
-# shell_onrun: same as $(shell) but doesn't evaluate during make autocompletion
-# $(1): code to evaluate
-# returns: evaluated code on run, the empty str otherwise
-define shell_onrun
-$(if $(filter .DEFAULT,$(MAKECMDGOALS)),,$(shell $(1)))
-endef
-
 SHELL := /bin/bash
 RM := rm -rf
 CPPFLAGS := -I src
-DEPFLAGS = -MMD -MP -MF .deps/$*.d
 
 ###########################################################
 
@@ -18,8 +10,8 @@ List \
 Optional \
 Pair \
 
+ENTITY_SRCS := $(ENTITIES:%=src/%.mlp)
 ENTITY_OBJS := $(ENTITIES:%=src/%.ml)
-ENTITY_DEPS := $(ENTITIES:%=.deps/%.d)
 
 ###########################################################
 
@@ -37,16 +29,12 @@ mrproper:
 
 ###########################################################
 
-$(ENTITY_OBJS) src/utils.ml: src/%.ml: src/%.mlp
-	./mlcpp.sh -o $@ $< $(CPPFLAGS) $(DEPFLAGS) \
-		&& perl -pe 's|^.*?:|$@:| if $$. == 1' -i .deps/$*.d
-
--include $(ENTITY_DEPS) .deps/utils.d
+$(ENTITY_OBJS) src/utils.ml: src/%.ml: src/%.mlp .FORCE
+	./mlcpp.sh -o $@ $< $(CPPFLAGS)
 
 ###########################################################
 
-# will create all necessary directories after the Makefile is parsed
-$(call shell_onrun, mkdir -p .deps)
+.FORCE: ;
 
 ## shall not rely on these ##
 # .DELETE_ON_ERROR:
