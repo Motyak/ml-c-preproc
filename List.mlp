@@ -1,8 +1,8 @@
 #pragma once
 
-#include "utils.mlp"
-#include "Pair.mlp"
-#include "Optional.mlp"
+#include <utils.mlp>
+#include <Pair.mlp>
+#include <Optional.mlp>
 
 var Pair? (left, right):{
     Optional($true, Pair(left, right))
