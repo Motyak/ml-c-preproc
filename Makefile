@@ -25,7 +25,7 @@ ENTITY_DEPS := $(ENTITIES:%=.deps/%.d)
 
 all: main
 
-main: $(ENTITY_OBJS)
+main: $(ENTITY_OBJS) src/utils.ml
 
 clean:
 	$(RM) -rf src/*.ml .deps/*
@@ -39,7 +39,7 @@ mrproper:
 
 $(ENTITY_OBJS) src/utils.ml: src/%.ml: src/%.mlp
 	./mlcpp.sh -o $@ $< $(CPPFLAGS) $(DEPFLAGS) \
-	&& perl -pe 's|^.*?:|$@:| if $$. == 1' -i .deps/$*.d
+		&& perl -pe 's|^.*?:|$@:| if $$. == 1' -i .deps/$*.d
 
 -include $(ENTITY_DEPS) .deps/utils.d
 
