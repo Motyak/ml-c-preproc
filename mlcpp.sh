@@ -3,6 +3,9 @@ set -o errexit
 set -o pipefail
 # set -o xtrace #debug
 
+# protection against corrupted output file
+trap '[ -f "$FILEOUT" ] && rm -f "$FILEOUT"' ERR
+
 if [ "$1" == -o ]; then
     FILEOUT="$2"
     [[ "$FILEOUT" =~ ^-$ ]] && FILEOUT="/dev/stdout"
