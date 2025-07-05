@@ -13,3 +13,7 @@ var left (pair):{
 var right (pair):{
     pair((left, right):{right})
 }
+
+package main
+
+print("Pair.mlp")

@@ -1,4 +1,6 @@
 #!/bin/bash
+set -o errexit
+set -o pipefail
 
 FILE="$1"
 
@@ -7,10 +9,9 @@ FILE="$1"
     exit 1
 }
 
-[ "$FILE" -nt "${FILE%.mlp}.ml" ] || {
-    >&2 echo "nothing to do"
-    exit 0
-}
-
 cat /dev/null > "${FILE%.mlp}.ml"
-cpp -w -P "$FILE" | perl -pe 's/^\s+$//gm' >> "${FILE%.mlp}.ml"
+cpp -w "$FILE" \
+    | perl -0pe 's/^package main\n.*?\n# /# /gms' \
+    | perl -pe 's/^package [^ ]+$//gm' \
+    | perl -pe 's/^# \d.*\n//gm' \
+    | perl -ne 'print unless s/^ +$//' >> "${FILE%.mlp}.ml"

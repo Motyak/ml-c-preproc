@@ -64,3 +64,7 @@ var size (list):{
     foreach(list, (_):{count += 1})
     count
 }
+
+package main
+
+print("List.mlp")

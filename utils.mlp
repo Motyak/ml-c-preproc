@@ -52,3 +52,7 @@ var curry (fn):{
 var |> (input, fn):{
     fn(input)
 }
+
+package main
+
+print("utils.mlp")
