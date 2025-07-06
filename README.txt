@@ -11,3 +11,14 @@
 
 # you can also output in the stdout
 ./mlcpp.sh -o - myprog.mlp -I .
+
+---
+
+Modules (.mlp files exporting symbols) should have their
+`#include`s, if any, at the very top, suceeding a `#pragma once`
+to protect against multiple inclusion.
+
+A `package main` line serves to separate between code to
+always export and code to export only when executing as the main file.
+
+There should be no `#include` after the `package main` line.
