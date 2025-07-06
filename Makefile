@@ -1,35 +1,33 @@
 SHELL := /bin/bash
-RM := rm -rf
+RM := rm -f
 CPPFLAGS := -I src
 
 ###########################################################
 
-ENTITIES := \
-ListIterator \
-List \
-Optional \
+MODULES := \
+utils \
 Pair \
+Optional \
+List \
+ListIterator \
+myprog \
 
-ENTITY_SRCS := $(ENTITIES:%=src/%.mlp)
-ENTITY_OBJS := $(ENTITIES:%=src/%.ml)
+MODULES_OBJS := $(MODULES:%=src/%.ml)
 
 ###########################################################
 
 all: main
 
-main: $(ENTITY_OBJS) src/utils.ml
+main: $(MODULES_OBJS)
 
 clean:
-	$(RM) -rf src/*.ml .deps/*
+	$(RM) src/*.ml
 
-mrproper:
-	$(RM) -rf src/*.ml .deps
-
-.PHONY: all main clean mrproper
+.PHONY: all main clean
 
 ###########################################################
 
-$(ENTITY_OBJS) src/utils.ml: src/%.ml: src/%.mlp .FORCE
+$(MODULES_OBJS): src/%.ml: src/%.mlp .FORCE
 	./mlcpp.sh -o $@ $< $(CPPFLAGS)
 
 ###########################################################

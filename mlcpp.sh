@@ -29,14 +29,13 @@ fi
     >&2 echo "Output file has been updated, are you sure you want to overwrite it ?"
     >&2 echo -n "confirm?(Y/n) >"
     read confirm
-    [[ "$confirm" =~ n|N ]] && { >&2 echo "aborted"; exit 2; }
+    [[ "$confirm" =~ n|N ]] && { >&2 echo "aborted"; exit 0; }
 }
 
 cpp -w $ARGS "$FILEIN" \
     | perl -0pe 's/^package main\n.*?\n# /# /gms' \
     | perl -pe 's/^package [^ ]+$//gm' \
-    | perl -pe 's/^# \d.*\n//gm' \
-    | perl -ne 'print unless s/^ +$//' > "$FILEOUT"
+    | perl preprocess_cpp_linemarkers.pl > "$FILEOUT"
 
 [ -f "$FILEOUT" ] && touch -r "$FILEIN" "$FILEOUT"
 
