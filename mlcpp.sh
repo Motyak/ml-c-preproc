@@ -34,7 +34,7 @@ fi
 
 cpp -w $ARGS "$FILEIN" \
     | perl -0pe 's/^package main\n.*?\n# /# /gms' \
-    | perl -pe 's/^package [^ ]+$//gm' \
+    | perl -pe 's/^package (\S+)\n/"package $1"\n/gm' \
     | perl preprocess_cpp_linemarkers.pl > "$FILEOUT"
 
 [ -f "$FILEOUT" ] && touch -r "$FILEIN" "$FILEOUT"
