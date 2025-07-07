@@ -19,6 +19,6 @@ Modules (.mlp files exporting symbols) should have their
 to protect against multiple inclusion.
 
 A `package main` line serves to separate between code to
-always export from code to only export when executing as the main file.
+always export from code to only export when pre-processing as the main file.
 
 There should be no `#include` after the `package main` line.
