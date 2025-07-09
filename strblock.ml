@@ -5,10 +5,6 @@ var empty ```
 
 0.123'456
 
-
-
-
-
 var strblock ```
     #include <fds.ml>
     /* some comment */
