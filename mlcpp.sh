@@ -32,7 +32,13 @@ fi
     [[ "$confirm" =~ n|N ]] && { >&2 echo "aborted"; exit 0; }
 }
 
-cpp -w $ARGS "$FILEIN" \
+# first pass is just for printing errors, if any
+>/dev/null cpp -w "$FILEIN"
+
+# escape backslash-newline (otherwise interpreted as continued line by cpp)
+escaped="$(perl -pe 's|\\\n|\\/**/\n|gm' "$FILEIN")"
+
+cpp -w $ARGS <<< "$escaped" \
     | perl -0pe 's/^package main\n.*?\n# /# /gms' \
     | perl -pe 's/^package (\S+)\n/"package $1"\n/gm' \
     | perl preprocess_cpp_linemarkers.pl > "$FILEOUT"

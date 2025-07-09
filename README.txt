@@ -22,3 +22,11 @@ A `package main` line serves to separate between code to
 always export from code to only export when pre-processing as the main file.
 
 There should be no `#include` after the `package main` line.
+
+---
+
+CPP CAVEAT
+
+Within multiline str literals, must escape line starting with #
+(replace by \#) as well as any occurence of /* (replace by /\*)
+and // (replace by /\/).
