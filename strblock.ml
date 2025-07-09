@@ -3,12 +3,23 @@ var empty ```
     \
 ```
 
+0.123'456
+
+
+
+
+
 var strblock ```
-    \#include <fds.ml>
-    /\* some comment */
-    /\/ comment
+    #include <fds.ml>
+    /* some comment */
+    // comment
     abc
     def
+    ??(
+    <%
+    __LINE__
+    __FILE__
+    __COUNTER__
 ```
 
 print(strblock)

@@ -32,16 +32,34 @@ fi
     [[ "$confirm" =~ n|N ]] && { >&2 echo "aborted"; exit 0; }
 }
 
-# first pass is just for printing errors, if any
->/dev/null cpp -w "$FILEIN"
+cpp_input="$(cat << EOF
+#warning "=== STANDARD DEFINED MACROS ==="
+$(awk '{print "#undef " $0}' standard_predefined_macros.txt)
 
-# escape backslash-newline (otherwise interpreted as continued line by cpp)
-escaped="$(perl -pe 's|\\\n|\\/**/\n|gm' "$FILEIN")"
+#warning "=== COMMON DEFINED MACROS ==="
+$(awk '{print "#undef " $0}' common_predefined_macros.txt)
 
-cpp -w $ARGS <<< "$escaped" \
-    | perl -0pe 's/^package main\n.*?\n# /# /gms' \
+#warning "=== OTHER DEFINED MACROS ==="
+$(cpp -undef -dM <<< "" | awk '{print "#undef " $2}')
+
+#define ESCAPE_CPP__
+#define NULL_DIRECTIVE__ #
+NULL_DIRECTIVE__
+$(perl -pe 's/\\\n/\\ESCAPE_CPP__\n/gm' "$FILEIN" \
+    | perl -pe 's/( {4,})#/$1ESCAPE_CPP__#/g')
+EOF
+)"
+
+cpp_output="$(2>/dev/null cpp -w -undef -nostdinc -fpreprocessed -C -fdirectives-only $ARGS <<< "$cpp_input" || {
+    exit_code=$?
+    # report errors from file, instead of <stdin>
+    cpp -w -undef -nostdinc $ARGS "$FILEIN"
+    exit $exit_code
+})"
+
+perl -0pe 's/^package main\n.*?\n# /# /gms' <<< "$cpp_output" \
     | perl -pe 's/^package (\S+)\n/"package $1"\n/gm' \
-    | perl preprocess_cpp_linemarkers.pl > "$FILEOUT"
+    | perl preprocess_cpp_linemarkers.pl "$FILEIN" > "$FILEOUT"
 
 [ -f "$FILEOUT" ] && touch -r "$FILEIN" "$FILEOUT"
 
