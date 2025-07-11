@@ -3,6 +3,8 @@
 #include <utils.mlp>
 #include <List.mlp>
 
+package global
+
 var ListIterator (list):{
     var cur-pos 1
 

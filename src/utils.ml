@@ -1,4 +1,5 @@
 
+
 var tern (cond, if_true, if_false):{
     var res _
     cond && {res := if_true}

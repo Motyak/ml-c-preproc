@@ -58,7 +58,8 @@ cpp_output="$(2>/dev/null cpp -w -undef -nostdinc -fpreprocessed -C -fdirectives
 })"
 
 perl -0pe 's/^package main\n.*?\n# /# /gms' <<< "$cpp_output" \
-    | perl -pe 's/^package (\S+)\n/"package $1"\n/gm' \
+    | perl -pe 's/^package main\n/"package main"\n/gm' \
+    | perl -pe 's/^package (\S+)\n//gm' \
     | perl preprocess_cpp_linemarkers.pl "$FILEIN" > "$FILEOUT"
 
 [ -f "$FILEOUT" ] && touch -r "$FILEIN" "$FILEOUT"

@@ -4,6 +4,8 @@
 #include <Pair.mlp>
 #include <Optional.mlp>
 
+package global
+
 var Pair? (left, right):{
     Optional($true, Pair(left, right))
 }
