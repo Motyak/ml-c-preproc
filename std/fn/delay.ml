@@ -26,9 +26,7 @@ var a delay(id(123))
 var b delay(id('someval))
 
 "arguments get evaluated in the function (if used)"
-
 "fncall(a(), b())"
 fncall(a(), b())
-
 "fncall2(a(), b())"
 fncall2(a(), b())

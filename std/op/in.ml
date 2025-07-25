@@ -1,6 +1,8 @@
+
 "=== mlcpp: BEGIN ./std/fn/loops.mlp =========================================="
 
 "=== mlcpp: BEGIN ./std/fn/tern.mlp ==========================================="
+
 var tern (cond, if_true, if_false):{
     var res _
     cond && {res := if_true}
@@ -60,6 +62,7 @@ var foreach (OUT container, fn):{
         local_container
     })
 }
+
 "=== mlcpp: END ./std/fn/loops.mlp (finally back to std/op/in.mlp) ============"
 
 var in (elem, container):{

@@ -4,6 +4,7 @@
 "=== mlcpp: BEGIN ./std/op/sub.mlp ============================================"
 
 "=== mlcpp: BEGIN ./std/fn/tern.mlp ==========================================="
+
 var tern (cond, if_true, if_false):{
     var res _
     cond && {res := if_true}
@@ -65,7 +66,7 @@ var stdout {
 
 "===curried_add example==="
 
-let add (a, b, c):{
+var add (a, b, c):{
     a + b + c
 }
 

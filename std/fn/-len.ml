@@ -1,4 +1,6 @@
 
+"=== mlcpp: BEGIN ./std/op/sub.mlp ============================================"
+
 "=== mlcpp: BEGIN ./std/fn/tern.mlp ==========================================="
 
 var tern (cond, if_true, if_false):{
@@ -15,7 +17,7 @@ var !tern (cond, if_false, if_true):{
 var not (bool):{
     tern(bool, $false, $true)
 }
-"=== mlcpp: END ./std/fn/tern.mlp (finally back to std/op/sub.mlp) ============"
+"=== mlcpp: END ./std/fn/tern.mlp (back to ./std/op/sub.mlp) =================="
 
 var - {
     var neg (x):{
@@ -35,13 +37,8 @@ var - {
     -
 }
 
-"package main"
+"=== mlcpp: END ./std/op/sub.mlp (finally back to std/fn/-len.mlp) ============"
 
--(3)
--(3, 5)
-
-3 - 5
-1 - 2 - 3
-
--- -- this doesn't work
--- -(1, 2, 3)
+var -len (container):{
+    -(len(container))
+}
