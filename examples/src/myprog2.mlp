@@ -1,0 +1,11 @@
+#include <Queue.mlp>
+
+var queue Queue()
+push(queue, 14)
+push(queue, 28)
+push(queue, 57)
+print(14, front(queue))
+pop(queue)
+print(28, front(queue))
+pop(queue)
+print(57, front(queue))

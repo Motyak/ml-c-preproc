@@ -1,3 +1,4 @@
+"=== mlcpp: BEGIN examples/src/Stream.mlp ====================================="
 
 "=== mlcpp: BEGIN examples/src/utils.mlp ======================================"
 
@@ -55,10 +56,7 @@ var |> (input, fn):{
     fn(input)
 }
 
-"=== mlcpp: END examples/src/utils.mlp (finally back to examples/src/ListIterator.mlp) ==="
-"=== mlcpp: BEGIN examples/src/List.mlp ======================================="
-
-
+"=== mlcpp: END examples/src/utils.mlp (back to examples/src/Stream.mlp) ======"
 "=== mlcpp: BEGIN examples/src/Pair.mlp ======================================="
 
 
@@ -76,7 +74,7 @@ var right (pair):{
     pair((left, right):{right})
 }
 
-"=== mlcpp: END examples/src/Pair.mlp (back to examples/src/List.mlp) ========="
+"=== mlcpp: END examples/src/Pair.mlp (back to examples/src/Stream.mlp) ======="
 "=== mlcpp: BEGIN examples/src/Optional.mlp ==================================="
 
 
@@ -117,7 +115,7 @@ var some (opt):{
     opt(1)()
 }
 
-"=== mlcpp: END examples/src/Optional.mlp (back to examples/src/List.mlp) ====="
+"=== mlcpp: END examples/src/Optional.mlp (back to examples/src/Stream.mlp) ==="
 
 
 var Pair? (left, right):{
@@ -127,20 +125,21 @@ var END {
     Optional($false, _)
 }
 
-var List {
-    var List-1+ _
+var Stream Pair?
 
-    var List (xs...):{
-        !tern($#varargs, END, {
-            List-1+(xs...)
+var stream-filter {
+    var stream-filter _
+
+    stream-filter := (pred, stream):{
+        tern(none?(stream), END, {
+            var stream some(stream)
+            !tern(pred(left(stream)), stream-filter(pred, right(stream)), {
+                Stream(left(stream), stream-filter(pred, right(stream)))
+            })
         })
     }
 
-    List-1+ := (x, xs...):{
-        Pair?(x, List(xs...))
-    }
-
-    List
+    stream-filter
 }
 
 var subscript {
@@ -150,11 +149,11 @@ var subscript {
     }
 
     var subscript _
-    subscript := (list, nth):{
-        tern(none?(list), err(), {
-            var list some(list)
-            !tern(nth + -1, left(list), {
-                subscript(right(list), nth + -1)
+    subscript := (stream, nth):{
+        tern(none?(stream), err(), {
+            var stream some(stream)
+            !tern(nth + -1, left(stream), {
+                subscript(right(stream), nth + -1)
             })
         })
     }
@@ -162,69 +161,19 @@ var subscript {
     subscript
 }
 
-var foreach {
-    var foreach _
+"=== mlcpp: END examples/src/Stream.mlp (finally back to examples/src/myprog3.mlp) ==="
 
-    foreach := (list, do):{
-        none?(list) || {
-            do(left(some(list)))
-            foreach(right(some(list)), do)
-        }
+var ints_starting_from_n {
+    var ints_starting_from_n _
+
+    ints_starting_from_n := (n):{
+        Stream(n, ints_starting_from_n(n + 1))
     }
 
-    (foreach)
+    ints_starting_from_n
 }
 
-var size (list):{
-    var count 0
-    foreach(list, (_):{count += 1})
-    count
-}
-
-"=== mlcpp: END examples/src/List.mlp (finally back to examples/src/ListIterator.mlp) ==="
-
-
-var ListIterator (list):{
-    var cur-pos 1
-
-    var advance ():{
-        var res subscript(list, cur-pos)
-        cur-pos += 1
-        res
-    }
-
-    var peek ():{
-        subscript(list, cur-pos)
-    }
-
-    '----------------
-
-    var dispatcher (msg_id):{
-        !tern(msg_id, advance, {
-            !tern(msg_id + -1, peek, {
-                print("ERR invalid msg_id in dispatcher: `" + msg_id + "`")
-                exit(1)
-            })
-        })
-    }
-
-    dispatcher
-}
-
-var advance {
-    var advance (list-it):{
-        list-it(0)()
-    }
-    curry(advance)
-}
-
-var peek {
-    var peek (list-it):{
-        list-it(1)()
-    }
-    curry(peek)
-}
-
-"package main"
-
-print("ListIterator.mlp")
+var ints ints_starting_from_n(1)
+var not3 stream-filter((x):{x + -3}, ints)
+print(subscript(not3, 2))
+print(subscript(not3, 3))

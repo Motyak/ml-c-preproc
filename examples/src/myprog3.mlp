@@ -1,0 +1,16 @@
+#include <Stream.mlp>
+
+var ints_starting_from_n {
+    var ints_starting_from_n _
+
+    ints_starting_from_n := (n):{
+        Stream(n, ints_starting_from_n(n + 1))
+    }
+
+    ints_starting_from_n
+}
+
+var ints ints_starting_from_n(1)
+var not3 stream-filter((x):{x + -3}, ints)
+print(subscript(not3, 2))
+print(subscript(not3, 3))

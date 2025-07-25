@@ -9,6 +9,7 @@ sub ml_comment {
     my ($msg) = @_;
     my $ML_COMMENT_WIDTH = 80;
     $msg = "=== mlcpp: ${msg} ===";
+    no warnings "numeric"; # when `x` op rhs is negative => same as 0
     my $comment = "\"" . $msg . "=" x ($ML_COMMENT_WIDTH - 2 - length($msg)) . "\"";
     return $comment;
 }

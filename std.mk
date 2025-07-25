@@ -1,18 +1,24 @@
 SHELL := /bin/bash
 RM := rm -f
-CPPFLAGS := -I src
+CPPFLAGS := -I .
 
 ###########################################################
 
 MODULES := \
-utils \
-Pair \
-Optional \
-List \
-ListIterator \
-myprog \
+std/fn/tern \
+std/op/pipe \
+std/fn/delay \
+std/op/comp \
+std/op/sub \
+std/fn/loops \
+std/op/in \
+std/fn/-len \
+std/fn/curry \
+std/fn/ascii \
+std/fn/ByteStr \
+std/* \
 
-MODULES_OBJS := $(MODULES:%=src/%.ml)
+MODULES_OBJS := $(MODULES:%=%.ml)
 
 ###########################################################
 
@@ -21,13 +27,13 @@ all: main
 main: $(MODULES_OBJS)
 
 clean:
-	$(RM) src/*.ml
+	$(RM) {std,std/op,std/fn}/*.ml
 
 .PHONY: all main clean
 
 ###########################################################
 
-$(MODULES_OBJS): src/%.ml: src/%.mlp .FORCE
+$(MODULES_OBJS): %.ml: %.mlp .FORCE
 	./mlcpp.sh -o $@ $< $(CPPFLAGS)
 
 ###########################################################

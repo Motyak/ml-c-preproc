@@ -1,0 +1,32 @@
+#pragma once
+
+#include <std/fn/tern.mlp>
+
+var - {
+    var neg (x):{
+        x + -2 * x
+    }
+
+    var sub (lhs, rhs):{
+        lhs + neg(rhs)
+    }
+
+    var - (x, xs...):{
+        tern($#varargs == 0, neg(x), {
+            sub(x, xs...)
+        })
+    }
+
+    -
+}
+
+package main
+
+-(3)
+-(3, 5)
+
+3 - 5
+1 - 2 - 3
+
+-- -- this doesn't work
+-- -(1, 2, 3)

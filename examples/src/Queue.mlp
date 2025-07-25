@@ -1,0 +1,56 @@
+#include <List.mlp>
+
+package global
+
+var merge _
+merge := (list1, list2):{
+    tern(none?(list1), list2, {
+        list1 := some(list1)
+        Pair?(left(list1), merge(right(list1), list2))
+    })
+}
+
+var Queue ():{
+    var list END
+
+    var front ():{
+        none?(list) && {
+            print("ERR calling front() on empty Queue")
+            exit(1)
+        }
+        left(some(list))
+    }
+
+    var push (x):{
+        list := merge(list, Pair?(x, END))
+    }
+
+    var pop ():{
+        tern(none?(list), {}, {
+            list := right(some(list))
+        })
+    }
+
+    '---------------------
+
+    var dispatcher (msg_id):{
+        !tern(msg_id, front, {
+            !tern(msg_id + -1, push, {
+                !tern(msg_id + -2, pop, {
+                    print("ERR invalid msg_id in dispatcher: `" + msg_id + "`")
+                    exit(1)
+                })
+            })
+        })
+    }
+
+    dispatcher
+}
+
+var front (queue):{queue(0)()}
+var push (queue, x):{queue(1)(x)}
+var pop (queue):{queue(2)()}
+
+package main
+
+print("Queue.mlp")

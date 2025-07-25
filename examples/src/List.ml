@@ -1,5 +1,5 @@
 
-"=== mlcpp: BEGIN src/utils.mlp ==============================================="
+"=== mlcpp: BEGIN examples/src/utils.mlp ======================================"
 
 
 var tern (cond, if_true, if_false):{
@@ -55,8 +55,8 @@ var |> (input, fn):{
     fn(input)
 }
 
-"=== mlcpp: END src/utils.mlp (finally back to src/List.mlp) =================="
-"=== mlcpp: BEGIN src/Pair.mlp ================================================"
+"=== mlcpp: END examples/src/utils.mlp (finally back to examples/src/List.mlp) ==="
+"=== mlcpp: BEGIN examples/src/Pair.mlp ======================================="
 
 
 
@@ -73,8 +73,8 @@ var right (pair):{
     pair((left, right):{right})
 }
 
-"=== mlcpp: END src/Pair.mlp (finally back to src/List.mlp) ==================="
-"=== mlcpp: BEGIN src/Optional.mlp ============================================"
+"=== mlcpp: END examples/src/Pair.mlp (finally back to examples/src/List.mlp) ==="
+"=== mlcpp: BEGIN examples/src/Optional.mlp ==================================="
 
 
 
@@ -114,7 +114,7 @@ var some (opt):{
     opt(1)()
 }
 
-"=== mlcpp: END src/Optional.mlp (finally back to src/List.mlp) ==============="
+"=== mlcpp: END examples/src/Optional.mlp (finally back to examples/src/List.mlp) ==="
 
 
 var Pair? (left, right):{

@@ -1,6 +1,6 @@
-"=== mlcpp: BEGIN src/ListIterator.mlp ========================================"
+"=== mlcpp: BEGIN examples/src/ListIterator.mlp ==============================="
 
-"=== mlcpp: BEGIN src/utils.mlp ==============================================="
+"=== mlcpp: BEGIN examples/src/utils.mlp ======================================"
 
 
 var tern (cond, if_true, if_false):{
@@ -56,11 +56,11 @@ var |> (input, fn):{
     fn(input)
 }
 
-"=== mlcpp: END src/utils.mlp (back to src/ListIterator.mlp) =================="
-"=== mlcpp: BEGIN src/List.mlp ================================================"
+"=== mlcpp: END examples/src/utils.mlp (back to examples/src/ListIterator.mlp) ==="
+"=== mlcpp: BEGIN examples/src/List.mlp ======================================="
 
 
-"=== mlcpp: BEGIN src/Pair.mlp ================================================"
+"=== mlcpp: BEGIN examples/src/Pair.mlp ======================================="
 
 
 
@@ -77,8 +77,8 @@ var right (pair):{
     pair((left, right):{right})
 }
 
-"=== mlcpp: END src/Pair.mlp (back to src/List.mlp) ==========================="
-"=== mlcpp: BEGIN src/Optional.mlp ============================================"
+"=== mlcpp: END examples/src/Pair.mlp (back to examples/src/List.mlp) ========="
+"=== mlcpp: BEGIN examples/src/Optional.mlp ==================================="
 
 
 
@@ -118,7 +118,7 @@ var some (opt):{
     opt(1)()
 }
 
-"=== mlcpp: END src/Optional.mlp (back to src/List.mlp) ======================="
+"=== mlcpp: END examples/src/Optional.mlp (back to examples/src/List.mlp) ====="
 
 
 var Pair? (left, right):{
@@ -182,7 +182,7 @@ var size (list):{
     count
 }
 
-"=== mlcpp: END src/List.mlp (back to src/ListIterator.mlp) ==================="
+"=== mlcpp: END examples/src/List.mlp (back to examples/src/ListIterator.mlp) ==="
 
 
 var ListIterator (list):{
@@ -226,7 +226,7 @@ var peek {
     curry(peek)
 }
 
-"=== mlcpp: END src/ListIterator.mlp (finally back to src/myprog.mlp) ========="
+"=== mlcpp: END examples/src/ListIterator.mlp (finally back to examples/src/myprog.mlp) ==="
 
 var list List(3, 141, 59, 26)
 

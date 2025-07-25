@@ -1,0 +1,24 @@
+#pragma once
+
+#include <std/fn/tern.mlp>
+#include <std/op/sub.mlp>
+
+var ascii (c):{
+    Int(Char(c))
+}
+
+var lower (OUT c):{
+    tern(ascii(c) >= ascii('a), c, {
+        var local_c c
+        local_c := Char(local_c) + (ascii('a) - ascii('A))
+        local_c
+    })
+}
+
+var upper (OUT c):{
+    tern(ascii(c) <= ascii('Z), c, {
+        var local_c c
+        local_c := Char(local_c) - (ascii('a) - ascii('A))
+        local_c
+    })
+}

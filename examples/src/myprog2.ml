@@ -1,3 +1,5 @@
+"=== mlcpp: BEGIN examples/src/Queue.mlp ======================================"
+"=== mlcpp: BEGIN examples/src/List.mlp ======================================="
 
 "=== mlcpp: BEGIN examples/src/utils.mlp ======================================"
 
@@ -55,10 +57,7 @@ var |> (input, fn):{
     fn(input)
 }
 
-"=== mlcpp: END examples/src/utils.mlp (finally back to examples/src/ListIterator.mlp) ==="
-"=== mlcpp: BEGIN examples/src/List.mlp ======================================="
-
-
+"=== mlcpp: END examples/src/utils.mlp (back to examples/src/List.mlp) ========"
 "=== mlcpp: BEGIN examples/src/Pair.mlp ======================================="
 
 
@@ -181,29 +180,47 @@ var size (list):{
     count
 }
 
-"=== mlcpp: END examples/src/List.mlp (finally back to examples/src/ListIterator.mlp) ==="
+"=== mlcpp: END examples/src/List.mlp (back to examples/src/Queue.mlp) ========"
 
 
-var ListIterator (list):{
-    var cur-pos 1
+var merge _
+merge := (list1, list2):{
+    tern(none?(list1), list2, {
+        list1 := some(list1)
+        Pair?(left(list1), merge(right(list1), list2))
+    })
+}
 
-    var advance ():{
-        var res subscript(list, cur-pos)
-        cur-pos += 1
-        res
+var Queue ():{
+    var list END
+
+    var front ():{
+        none?(list) && {
+            print("ERR calling front() on empty Queue")
+            exit(1)
+        }
+        left(some(list))
     }
 
-    var peek ():{
-        subscript(list, cur-pos)
+    var push (x):{
+        list := merge(list, Pair?(x, END))
     }
 
-    '----------------
+    var pop ():{
+        tern(none?(list), {}, {
+            list := right(some(list))
+        })
+    }
+
+    '---------------------
 
     var dispatcher (msg_id):{
-        !tern(msg_id, advance, {
-            !tern(msg_id + -1, peek, {
-                print("ERR invalid msg_id in dispatcher: `" + msg_id + "`")
-                exit(1)
+        !tern(msg_id, front, {
+            !tern(msg_id + -1, push, {
+                !tern(msg_id + -2, pop, {
+                    print("ERR invalid msg_id in dispatcher: `" + msg_id + "`")
+                    exit(1)
+                })
             })
         })
     }
@@ -211,20 +228,18 @@ var ListIterator (list):{
     dispatcher
 }
 
-var advance {
-    var advance (list-it):{
-        list-it(0)()
-    }
-    curry(advance)
-}
+var front (queue):{queue(0)()}
+var push (queue, x):{queue(1)(x)}
+var pop (queue):{queue(2)()}
 
-var peek {
-    var peek (list-it):{
-        list-it(1)()
-    }
-    curry(peek)
-}
+"=== mlcpp: END examples/src/Queue.mlp (finally back to examples/src/myprog2.mlp) ==="
 
-"package main"
-
-print("ListIterator.mlp")
+var queue Queue()
+push(queue, 14)
+push(queue, 28)
+push(queue, 57)
+print(14, front(queue))
+pop(queue)
+print(28, front(queue))
+pop(queue)
+print(57, front(queue))

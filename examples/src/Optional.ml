@@ -1,5 +1,5 @@
 
-"=== mlcpp: BEGIN src/utils.mlp ==============================================="
+"=== mlcpp: BEGIN examples/src/utils.mlp ======================================"
 
 
 var tern (cond, if_true, if_false):{
@@ -55,7 +55,7 @@ var |> (input, fn):{
     fn(input)
 }
 
-"=== mlcpp: END src/utils.mlp (finally back to src/Optional.mlp) =============="
+"=== mlcpp: END examples/src/utils.mlp (finally back to examples/src/Optional.mlp) ==="
 
 
 var Optional (some?, val):{

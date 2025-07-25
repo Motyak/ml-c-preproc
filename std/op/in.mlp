@@ -1,0 +1,18 @@
+#pragma once
+
+#include <std/fn/loops.mlp>
+
+var in (elem, container):{
+    var i 1
+    var found $false
+    until(():{found || i > len(container)}, ():{
+        found ||= container[#i] == elem
+        i += 1
+    })
+    found
+}
+
+package main
+
+"g" in "sdf"
+"d" in "sdf"

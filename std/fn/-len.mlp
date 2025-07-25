@@ -1,0 +1,7 @@
+#pragma once
+
+#include <std/op/sub.mlp>
+
+var -len (container):{
+    -(len(container))
+}

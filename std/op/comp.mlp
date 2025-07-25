@@ -1,0 +1,27 @@
+#pragma once
+
+#include <std/fn/tern.mlp>
+
+var <> (a, b, varargs...):{
+    not(==(a, b, varargs...))
+}
+
+var <= (a, b, varargs...):{
+    not(>(a, b, varargs...))
+}
+
+var < (a, b, varargs...):{
+    tern(==(a, b, varargs...), $false, {
+        tern(>(a, b, varargs...), $false, {
+            $true
+        })
+    })
+}
+
+var >= (a, b, varargs...):{
+    tern(==(a, b, varargs...), $true, {
+        tern(>(a, b, varargs...), $true, {
+            $false
+        })
+    })
+}
