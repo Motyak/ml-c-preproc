@@ -15,21 +15,6 @@ var not (bool):{
     tern(bool, $false, $true)
 }
 "=== mlcpp: END ./std/fn/tern.mlp (finally back to std/*.mlp) ================="
-"=== mlcpp: BEGIN ./std/op/pipe.mlp ==========================================="
-
-var |> (input, fn):{
-    fn(input)
-}
-"=== mlcpp: END ./std/op/pipe.mlp (finally back to std/*.mlp) ================="
-"=== mlcpp: BEGIN ./std/fn/delay.mlp =========================================="
-
-var delay (x):{
-    var delayed ():{x}
-    delayed
-}
-
-"=== mlcpp: END ./std/fn/delay.mlp (finally back to std/*.mlp) ================"
-
 "=== mlcpp: BEGIN ./std/fn/loops.mlp =========================================="
 
 
@@ -277,18 +262,33 @@ var >= (a, b, varargs...):{
 
     not(lt)
 }
+
 "=== mlcpp: END ./std/op/cmp.mlp (finally back to std/*.mlp) =================="
 "=== mlcpp: BEGIN ./std/op/sub.mlp ============================================"
 
 
 
+
+
+
 var - {
     var neg (x):{
+        x := Int(x)
         x + -2 * x
     }
 
-    var sub (lhs, rhs):{
-        lhs + neg(rhs)
+    var sub (a, b, varargs...):{
+        var otherArgs ArgIterator(b, varargs...)
+
+        var lhs a
+        var rhs next(otherArgs)
+        do_until(():{
+            var rhs' some(rhs)
+            lhs := lhs + neg(rhs')
+            rhs := next(otherArgs)
+        }, ():{none?(rhs)})
+
+        lhs
     }
 
     var - (x, xs...):{
@@ -316,15 +316,13 @@ var in (elem, container):{
 }
 
 "=== mlcpp: END ./std/op/in.mlp (finally back to std/*.mlp) ==================="
+"=== mlcpp: BEGIN ./std/op/pipe.mlp ==========================================="
 
-"=== mlcpp: BEGIN ./std/fn/-len.mlp ==========================================="
-
-
-
-var -len (container):{
-    -(len(container))
+var |> (input, fn):{
+    fn(input)
 }
-"=== mlcpp: END ./std/fn/-len.mlp (finally back to std/*.mlp) ================="
+"=== mlcpp: END ./std/op/pipe.mlp (finally back to std/*.mlp) ================="
+
 "=== mlcpp: BEGIN ./std/fn/curry.mlp =========================================="
 
 
@@ -332,7 +330,7 @@ var -len (container):{
 var curry (fn):{
     var curried _
     curried := (args...):{
-        !tern($#varargs + -len(fn), fn(args...), {
+        !tern($#varargs - len(fn), fn(args...), {
             (args2...):{curried(args..., args2...)}
         })
     }
@@ -346,6 +344,14 @@ var stdout {
 }
 
 "=== mlcpp: END ./std/fn/curry.mlp (finally back to std/*.mlp) ================"
+"=== mlcpp: BEGIN ./std/fn/delay.mlp =========================================="
+
+var delay (x):{
+    var delayed ():{x}
+    delayed
+}
+
+"=== mlcpp: END ./std/fn/delay.mlp (finally back to std/*.mlp) ================"
 
 "=== mlcpp: BEGIN ./std/fn/ascii.mlp =========================================="
 
