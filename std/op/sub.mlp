@@ -1,14 +1,28 @@
 #pragma once
 
+#include <std/fn/ArgIterator.mlp>
+#include <std/fn/Optional.mlp>
+#include <std/fn/loops.mlp>
 #include <std/fn/tern.mlp>
 
 var - {
     var neg (x):{
+        x := Int(x)
         x + -2 * x
     }
 
-    var sub (lhs, rhs):{
-        lhs + neg(rhs)
+    var sub (a, b, varargs...):{
+        var otherArgs ArgIterator(b, varargs...)
+
+        var lhs a
+        var rhs next(otherArgs)
+        do_until(():{
+            var rhs' some(rhs)
+            lhs := lhs + neg(rhs')
+            rhs := next(otherArgs)
+        }, ():{none?(rhs)})
+
+        lhs
     }
 
     var - (x, xs...):{
@@ -23,10 +37,13 @@ var - {
 package main
 
 -(3)
+
+'---
+
 -(3, 5)
-
 3 - 5
-1 - 2 - 3
 
--- -- this doesn't work
--- -(1, 2, 3)
+'---
+
+-(1, 2, 3)
+1 - 2 - 3

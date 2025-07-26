@@ -1,11 +1,11 @@
 #pragma once
 
-#include <std/fn/-len.mlp>
+#include <std/op/sub.mlp>
 
 var curry (fn):{
     var curried _
     curried := (args...):{
-        !tern($#varargs + -len(fn), fn(args...), {
+        !tern($#varargs - len(fn), fn(args...), {
             (args2...):{curried(args..., args2...)}
         })
     }

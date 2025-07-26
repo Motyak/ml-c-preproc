@@ -6,20 +6,24 @@ CPPFLAGS := -I .
 
 MODULES := \
 std/fn/tern \
-std/op/pipe \
-std/fn/delay \
 std/fn/loops \
+\
 std/fn/Pair \
 std/fn/Optional \
 std/fn/LazyList \
 std/fn/ArgIterator \
+\
 std/op/cmp \
 std/op/sub \
 std/op/in \
-std/fn/-len \
+std/op/pipe \
+\
 std/fn/curry \
+std/fn/delay \
+\
 std/fn/ascii \
 std/fn/ByteStr \
+\
 std/* \
 
 MODULES_OBJS := $(MODULES:%=%.ml)

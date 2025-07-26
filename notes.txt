@@ -1,2 +1,5 @@
-Un diagramme de dépendances serait pas mal (entre headers)
+L'ordering du *.mlp est choisi de telle sorte à minimiser les
+nested includes PUIS regrouper par "catégories" de modules.
+
+Un diagramme de dépendances serait pas mal (entre headers).
 
