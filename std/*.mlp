@@ -2,9 +2,15 @@
 #include <std/op/pipe.mlp>
 #include <std/fn/delay.mlp>
 
-#include <std/op/comp.mlp>
-#include <std/op/sub.mlp>
 #include <std/fn/loops.mlp>
+
+#include <std/fn/Pair.mlp>
+#include <std/fn/Optional.mlp>
+#include <std/fn/LazyList.mlp>
+#include <std/fn/ArgIterator.mlp>
+
+#include <std/op/cmp.mlp>
+#include <std/op/sub.mlp>
 #include <std/op/in.mlp>
 
 #include <std/fn/-len.mlp>

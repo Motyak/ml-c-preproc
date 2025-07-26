@@ -30,57 +30,6 @@ var delay (x):{
 
 "=== mlcpp: END ./std/fn/delay.mlp (finally back to std/*.mlp) ================"
 
-"=== mlcpp: BEGIN ./std/op/comp.mlp ==========================================="
-
-
-
-var <> (a, b, varargs...):{
-    not(==(a, b, varargs...))
-}
-
-var <= (a, b, varargs...):{
-    not(>(a, b, varargs...))
-}
-
-var < (a, b, varargs...):{
-    tern(==(a, b, varargs...), $false, {
-        tern(>(a, b, varargs...), $false, {
-            $true
-        })
-    })
-}
-
-var >= (a, b, varargs...):{
-    tern(==(a, b, varargs...), $true, {
-        tern(>(a, b, varargs...), $true, {
-            $false
-        })
-    })
-}
-"=== mlcpp: END ./std/op/comp.mlp (finally back to std/*.mlp) ================="
-"=== mlcpp: BEGIN ./std/op/sub.mlp ============================================"
-
-
-
-var - {
-    var neg (x):{
-        x + -2 * x
-    }
-
-    var sub (lhs, rhs):{
-        lhs + neg(rhs)
-    }
-
-    var - (x, xs...):{
-        tern($#varargs == 0, neg(x), {
-            sub(x, xs...)
-        })
-    }
-
-    -
-}
-
-"=== mlcpp: END ./std/op/sub.mlp (finally back to std/*.mlp) =================="
 "=== mlcpp: BEGIN ./std/fn/loops.mlp =========================================="
 
 
@@ -93,18 +42,24 @@ while := (cond, do):{
     }
 }
 
-var until (cond, do):{
-    while(():{not(cond())}, do)
+var until _
+until := (cond, do):{
+    cond() || {
+        do()
+        until(cond, do)
+    }
 }
 
 var do_while _
 do_while := (do, cond):{
     do()
-    cond() && do_while(do, cond)
+    while(cond, do)
 }
 
-var do_until (do, cond):{
-    do_while(do, cond)
+var do_until _
+do_until := (do, cond):{
+    do()
+    until(cond, do)
 }
 
 var foreach (OUT container, fn):{
@@ -130,6 +85,222 @@ var foreach (OUT container, fn):{
 }
 
 "=== mlcpp: END ./std/fn/loops.mlp (finally back to std/*.mlp) ================"
+
+"=== mlcpp: BEGIN ./std/fn/Pair.mlp ==========================================="
+
+
+
+var Pair (left, right):{
+    var dispatcher (msg_id):{
+        tern(msg_id == 0, left, {
+            tern(msg_id == 1, right, {
+                print("ERR unknown Pair dispatcher msg_id: `" + msg_id + "`")
+                exit(1)
+            })
+        })
+    }
+    dispatcher
+}
+
+var left (pair):{
+    pair(0)
+}
+
+var right (pair):{
+    pair(1)
+}
+"=== mlcpp: END ./std/fn/Pair.mlp (finally back to std/*.mlp) ================="
+"=== mlcpp: BEGIN ./std/fn/Optional.mlp ======================================="
+
+
+
+var Optional (some?, val):{
+    var none? ():{
+        not(some?)
+    }
+
+    var some ():{
+        some? || {
+            print("ERR calling some() on empty Optional")
+            exit(1)
+        }
+        val
+    }
+
+    '----------------
+
+    var dispatcher (msg_id):{
+        tern(msg_id == 0, none?, {
+            tern(msg_id == 1, some, {
+                print("ERR unknown Optional dispatcher msg_id: `" + msg_id + "`")
+                exit(1)
+            })
+        })
+    }
+
+    dispatcher
+}
+
+var none? (opt):{
+    opt(0)()
+}
+
+var some (opt):{
+    opt(1)()
+}
+"=== mlcpp: END ./std/fn/Optional.mlp (finally back to std/*.mlp) ============="
+"=== mlcpp: BEGIN ./std/fn/LazyList.mlp ======================================="
+
+
+
+
+
+var LazyList {
+    var Pair? (left, right):{
+        Optional($true, Pair(left, right))
+    }
+    var END {
+        Optional($false, _)
+    }
+
+    var LazyList-1+ _
+
+    var LazyList (xs...):{
+        tern($#varargs == 0, END, {
+            LazyList-1+(xs...)
+        })
+    }
+
+    LazyList-1+ := (x, xs...):{
+        Pair?(x, LazyList(xs...))
+    }
+
+    LazyList
+}
+"=== mlcpp: END ./std/fn/LazyList.mlp (finally back to std/*.mlp) ============="
+"=== mlcpp: BEGIN ./std/fn/ArgIterator.mlp ===================================="
+
+
+
+
+
+
+var ArgIterator (args...):{
+    var args LazyList(args...)
+
+    var Arg? (arg):{
+        Optional($true, arg)
+    }
+    var END {
+        Optional($false, _)
+    }
+
+    var next (peek?):{
+        tern(none?(args), END, {
+            var res left(some(args))
+            peek? || {
+                args := right(some(args))
+            }
+            Arg?(res)
+        })
+    }
+
+    next
+}
+
+var next (iterator):{
+    iterator(0)
+}
+var peek (iterator):{
+    iterator(1)
+}
+"=== mlcpp: END ./std/fn/ArgIterator.mlp (finally back to std/*.mlp) =========="
+
+"=== mlcpp: BEGIN ./std/op/cmp.mlp ============================================"
+
+
+
+
+
+
+var <> (a, b, varargs...):{
+    not(==(a, b, varargs...))
+}
+
+var < (a, b, varargs...):{
+    var otherArgs ArgIterator(b, varargs...)
+
+    var ge $false
+    var lhs a
+    var rhs next(otherArgs)
+    do_until(():{
+        var rhs' some(rhs)
+        tern(lhs > rhs' || lhs == rhs', {ge := $true}, {
+            lhs := rhs'
+            rhs := next(otherArgs)
+        })
+    }, ():{ge || none?(rhs)})
+
+    not(ge)
+}
+
+var <= (a, b, varargs...):{
+    var otherArgs ArgIterator(b, varargs...)
+
+    var gt $false
+    var lhs a
+    var rhs next(otherArgs)
+    do_until(():{
+        var rhs' some(rhs)
+        !tern(lhs > rhs' || lhs == rhs', {gt := $true}, {
+            lhs := rhs'
+            rhs := next(otherArgs)
+        })
+    }, ():{gt || none?(rhs)})
+
+    not(gt)
+}
+
+var >= (a, b, varargs...):{
+    var otherArgs ArgIterator(b, varargs...)
+
+    var lt $false
+    var lhs a
+    var rhs next(otherArgs)
+    do_until(():{
+        var rhs' some(rhs)
+        !tern(lhs > rhs' || lhs == rhs', {lt := $true}, {
+            lhs := rhs'
+            rhs := next(otherArgs)
+        })
+    }, ():{lt || none?(rhs)})
+
+    not(lt)
+}
+"=== mlcpp: END ./std/op/cmp.mlp (finally back to std/*.mlp) =================="
+"=== mlcpp: BEGIN ./std/op/sub.mlp ============================================"
+
+
+
+var - {
+    var neg (x):{
+        x + -2 * x
+    }
+
+    var sub (lhs, rhs):{
+        lhs + neg(rhs)
+    }
+
+    var - (x, xs...):{
+        tern($#varargs == 0, neg(x), {
+            sub(x, xs...)
+        })
+    }
+
+    -
+}
+
+"=== mlcpp: END ./std/op/sub.mlp (finally back to std/*.mlp) =================="
 "=== mlcpp: BEGIN ./std/op/in.mlp ============================================="
 
 

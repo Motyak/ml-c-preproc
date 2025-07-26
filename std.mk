@@ -8,9 +8,13 @@ MODULES := \
 std/fn/tern \
 std/op/pipe \
 std/fn/delay \
-std/op/comp \
-std/op/sub \
 std/fn/loops \
+std/fn/Pair \
+std/fn/Optional \
+std/fn/LazyList \
+std/fn/ArgIterator \
+std/op/cmp \
+std/op/sub \
 std/op/in \
 std/fn/-len \
 std/fn/curry \

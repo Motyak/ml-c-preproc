@@ -25,18 +25,24 @@ while := (cond, do):{
     }
 }
 
-var until (cond, do):{
-    while(():{not(cond())}, do)
+var until _
+until := (cond, do):{
+    cond() || {
+        do()
+        until(cond, do)
+    }
 }
 
 var do_while _
 do_while := (do, cond):{
     do()
-    cond() && do_while(do, cond)
+    while(cond, do)
 }
 
-var do_until (do, cond):{
-    do_while(do, cond)
+var do_until _
+do_until := (do, cond):{
+    do()
+    until(cond, do)
 }
 
 var foreach (OUT container, fn):{

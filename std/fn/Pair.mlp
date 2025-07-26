@@ -1,0 +1,23 @@
+#pragma once
+
+#include <std/fn/tern.mlp>
+
+var Pair (left, right):{
+    var dispatcher (msg_id):{
+        tern(msg_id == 0, left, {
+            tern(msg_id == 1, right, {
+                print("ERR unknown Pair dispatcher msg_id: `" + msg_id + "`")
+                exit(1)
+            })
+        })
+    }
+    dispatcher
+}
+
+var left (pair):{
+    pair(0)
+}
+
+var right (pair):{
+    pair(1)
+}

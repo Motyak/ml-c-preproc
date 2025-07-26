@@ -1,0 +1,28 @@
+#pragma once
+
+#include <std/fn/Pair.mlp>
+#include <std/fn/Optional.mlp>
+#include <std/fn/tern.mlp>
+
+var LazyList {
+    var Pair? (left, right):{
+        Optional($true, Pair(left, right))
+    }
+    var END {
+        Optional($false, _)
+    }
+
+    var LazyList-1+ _
+
+    var LazyList (xs...):{
+        tern($#varargs == 0, END, {
+            LazyList-1+(xs...)
+        })
+    }
+
+    LazyList-1+ := (x, xs...):{
+        Pair?(x, LazyList(xs...))
+    }
+
+    LazyList
+}
