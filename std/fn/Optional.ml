@@ -51,3 +51,7 @@ var none? (opt):{
 var some (opt):{
     opt(1)()
 }
+
+"package main"
+
+print("Optional.mlp")

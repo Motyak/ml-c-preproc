@@ -1,6 +1,4 @@
 
-"=== mlcpp: BEGIN ./std/fn/Iterator.mlp ======================================="
-
 "=== mlcpp: BEGIN ./std/fn/LazyList.mlp ======================================="
 
 "=== mlcpp: BEGIN ./std/fn/Pair.mlp ==========================================="
@@ -138,7 +136,7 @@ var subscript (subscriptable, nth):{
         LazyList::subscript(iterable, nth)
     })
 }
-"=== mlcpp: END ./std/fn/LazyList.mlp (back to ./std/fn/Iterator.mlp) ========="
+"=== mlcpp: END ./std/fn/LazyList.mlp (finally back to std/fn/Iterator.mlp) ==="
 
 
 "=== mlcpp: BEGIN ./std/fn/loops.mlp =========================================="
@@ -172,7 +170,7 @@ do_until := (do, cond):{
     do()
     until(cond, do)
 }
-"=== mlcpp: END ./std/fn/loops.mlp (back to ./std/fn/Iterator.mlp) ============"
+"=== mlcpp: END ./std/fn/loops.mlp (finally back to std/fn/Iterator.mlp) ======"
 "=== mlcpp: BEGIN ./std/fn/curry.mlp =========================================="
 
 var curry (fn):{
@@ -195,7 +193,7 @@ var stdout {
     })
 }
 
-"=== mlcpp: END ./std/fn/curry.mlp (back to ./std/fn/Iterator.mlp) ============"
+"=== mlcpp: END ./std/fn/curry.mlp (finally back to std/fn/Iterator.mlp) ======"
 
 
 var ArgIterator (args...):{
@@ -290,68 +288,48 @@ var foreach' {
     curry(foreach')
 }
 
-"=== mlcpp: END ./std/fn/Iterator.mlp (finally back to std/op/cmp.mlp) ========"
-
-
-
-
-var <> (a, b, varargs...):{
-    not(==(a, b, varargs...))
-}
-
-var < (a, b, varargs...):{
-    var otherArgs ArgIterator(b, varargs...)
-
-    var ge $false
-    var lhs a
-    var rhs next(otherArgs)
-    do_until(():{
-        var rhs' some(rhs)
-        tern(lhs > rhs' || lhs == rhs', {ge := $true}, {
-            lhs := rhs'
-            rhs := next(otherArgs)
-        })
-    }, ():{ge || none?(rhs)})
-
-    not(ge)
-}
-
-var <= (a, b, varargs...):{
-    var otherArgs ArgIterator(b, varargs...)
-
-    var gt $false
-    var lhs a
-    var rhs next(otherArgs)
-    do_until(():{
-        var rhs' some(rhs)
-        !tern(lhs > rhs' || lhs == rhs', {gt := $true}, {
-            lhs := rhs'
-            rhs := next(otherArgs)
-        })
-    }, ():{gt || none?(rhs)})
-
-    not(gt)
-}
-
-var >= (a, b, varargs...):{
-    var otherArgs ArgIterator(b, varargs...)
-
-    var lt $false
-    var lhs a
-    var rhs next(otherArgs)
-    do_until(():{
-        var rhs' some(rhs)
-        !tern(lhs > rhs' || lhs == rhs', {lt := $true}, {
-            lhs := rhs'
-            rhs := next(otherArgs)
-        })
-    }, ():{lt || none?(rhs)})
-
-    not(lt)
-}
-
 "package main"
 
-<(1, 2, 3)
-<(1, 2, 2)
-<(1, 2, 1)
+{
+    var str "fds"
+    var list [1, 2, 3]
+    var it RangeIterator<=(1, 4)
+
+    foreach(&str, (OUT c):{c := 'x})
+    print(str)
+    var newstr foreach(str, (OUT c):{c := 'y})
+    print(str)
+    print(newstr)
+
+    foreach(&list, (OUT n):{n := 0})
+    print(list)
+    var newlist foreach(list, (OUT n):{n := 7})
+    print(list)
+    print(newlist)
+
+    foreach(it, (x):{print(x)})
+}
+
+"test curryable foreach"
+
+{
+    var |> (input, fn):{
+        fn(input)
+    }
+
+    var ascii (c):{
+        Int(Char(c))
+    }
+
+    var upper (OUT c):{
+        var - (lhs, rhs):{
+            lhs + rhs + -2 * rhs
+        }
+
+        c := Char(c) - (ascii('a) - ascii('A))
+    }
+
+    var str "fds"
+
+    print(str |> foreach'(upper))
+}

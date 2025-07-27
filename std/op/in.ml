@@ -46,29 +46,6 @@ do_until := (do, cond):{
     do()
     until(cond, do)
 }
-
-var foreach (OUT container, fn):{
-    var i 1
-    var foreach_rec _
-    foreach_rec := (OUT container, fn):{
-        fn(&container[#i])
-        tern(i == len(container), container, {
-            i += 1
-            foreach_rec(&container, fn)
-        })
-    }
-
-    tern(len(container) == 0, container, {
-        -- we create a local var in case..
-        -- ..user has passed by delay rather..
-        -- ..than ref (otherwise "lvaluing $nil" error)
-        var local_container container
-        foreach_rec(&local_container, fn)
-        container := local_container
-        local_container
-    })
-}
-
 "=== mlcpp: END ./std/fn/loops.mlp (finally back to std/op/in.mlp) ============"
 
 var in (elem, container):{

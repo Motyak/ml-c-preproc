@@ -15,6 +15,44 @@ var not (bool):{
     tern(bool, $false, $true)
 }
 "=== mlcpp: END ./std/fn/tern.mlp (finally back to std/*.mlp) ================="
+"=== mlcpp: BEGIN ./std/fn/curry.mlp =========================================="
+
+var curry (fn):{
+    var - (lhs, rhs):{
+        lhs + rhs + -2 * rhs
+    }
+
+    var curried _
+    curried := (args...):{
+        tern($#varargs - len(fn) == 0, fn(args...), {
+            (args2...):{curried(args..., args2...)}
+        })
+    }
+    curried
+}
+
+var stdout {
+    curry((x):{
+        print(x)
+    })
+}
+
+"=== mlcpp: END ./std/fn/curry.mlp (finally back to std/*.mlp) ================"
+"=== mlcpp: BEGIN ./std/op/pipe.mlp ==========================================="
+
+var |> (input, fn):{
+    fn(input)
+}
+"=== mlcpp: END ./std/op/pipe.mlp (finally back to std/*.mlp) ================="
+"=== mlcpp: BEGIN ./std/fn/delay.mlp =========================================="
+
+var delay (x):{
+    var delayed ():{x}
+    delayed
+}
+
+"=== mlcpp: END ./std/fn/delay.mlp (finally back to std/*.mlp) ================"
+
 "=== mlcpp: BEGIN ./std/fn/loops.mlp =========================================="
 
 
@@ -46,31 +84,60 @@ do_until := (do, cond):{
     do()
     until(cond, do)
 }
+"=== mlcpp: END ./std/fn/loops.mlp (finally back to std/*.mlp) ================"
+"=== mlcpp: BEGIN ./std/fn/ascii.mlp =========================================="
 
-var foreach (OUT container, fn):{
-    var i 1
-    var foreach_rec _
-    foreach_rec := (OUT container, fn):{
-        fn(&container[#i])
-        tern(i == len(container), container, {
-            i += 1
-            foreach_rec(&container, fn)
-        })
+
+
+var ascii (c):{
+    Int(Char(c))
+}
+
+var lower (OUT c):{
+    var - (lhs, rhs):{
+        lhs + rhs + -2 * rhs
     }
 
-    tern(len(container) == 0, container, {
-        -- we create a local var in case..
-        -- ..user has passed by delay rather..
-        -- ..than ref (otherwise "lvaluing $nil" error)
-        var local_container container
-        foreach_rec(&local_container, fn)
-        container := local_container
-        local_container
+    tern(ascii(c) >= ascii('a), c, {
+        var local_c c
+        local_c := Char(local_c) + (ascii('a) - ascii('A))
+        local_c
     })
 }
 
-"=== mlcpp: END ./std/fn/loops.mlp (finally back to std/*.mlp) ================"
+var upper (OUT c):{
+    var - (lhs, rhs):{
+        lhs + rhs + -2 * rhs
+    }
 
+    tern(ascii(c) <= ascii('Z), c, {
+        var local_c c
+        local_c := Char(local_c) - (ascii('a) - ascii('A))
+        local_c
+    })
+}
+"=== mlcpp: END ./std/fn/ascii.mlp (finally back to std/*.mlp) ================"
+"=== mlcpp: BEGIN ./std/fn/ByteStr.mlp ========================================"
+
+
+
+var ByteStr {
+    var ByteStr-1+ _
+
+    var ByteStr (xs...):{
+        !tern($#varargs, "", {
+            ByteStr-1+(xs...)
+        })
+    }
+
+    ByteStr-1+ := (x, xs...):{
+        Char(x) + ByteStr(xs...)
+    }
+
+    ByteStr
+}
+
+"=== mlcpp: END ./std/fn/ByteStr.mlp (finally back to std/*.mlp) =============="
 "=== mlcpp: BEGIN ./std/fn/Pair.mlp ==========================================="
 
 
@@ -94,6 +161,7 @@ var left (pair):{
 var right (pair):{
     pair(1)
 }
+
 "=== mlcpp: END ./std/fn/Pair.mlp (finally back to std/*.mlp) ================="
 "=== mlcpp: BEGIN ./std/fn/Optional.mlp ======================================="
 
@@ -133,21 +201,38 @@ var none? (opt):{
 var some (opt):{
     opt(1)()
 }
+
 "=== mlcpp: END ./std/fn/Optional.mlp (finally back to std/*.mlp) ============="
+
+"=== mlcpp: BEGIN ./std/op/in.mlp ============================================="
+
+
+
+var in (elem, container):{
+    var i 1
+    var found $false
+    until(():{found || i > len(container)}, ():{
+        found ||= container[#i] == elem
+        i += 1
+    })
+    found
+}
+
+"=== mlcpp: END ./std/op/in.mlp (finally back to std/*.mlp) ==================="
 "=== mlcpp: BEGIN ./std/fn/LazyList.mlp ======================================="
 
 
 
 
 
-var LazyList {
-    var Pair? (left, right):{
-        Optional($true, Pair(left, right))
-    }
-    var END {
-        Optional($false, _)
-    }
+var Pair? (left, right):{
+    Optional($true, Pair(left, right))
+}
+var END {
+    Optional($false, _)
+}
 
+var LazyList {
     var LazyList-1+ _
 
     var LazyList (xs...):{
@@ -162,22 +247,44 @@ var LazyList {
 
     LazyList
 }
+
+-- increasing range from "from" up to "to" included
+var LazyRange<= _
+LazyRange<= := (from, to):{
+    tern(from > to, END, {
+        Pair?(from, LazyRange<=(from + 1, to))
+    })
+}
+
+var subscript (subscriptable, nth):{
+    nth >= 1 || ERR("nth should be greater than zero")
+
+    var LazyList::subscript (ll, nth):{
+        var subscript_rec _
+        subscript_rec := (ll, nth):{
+            tern(nth == 1, left(some(ll)), {
+                subscript_rec(right(some(ll)), nth - 1)
+            })
+        }
+        subscript_rec(ll, nth)
+    }
+
+    var is_lambda (x):{
+        Str(x) == "<lambda>"
+    }
+
+    !tern(is_lambda(iterable), iterable[#nth], {
+        LazyList::subscript(iterable, nth)
+    })
+}
 "=== mlcpp: END ./std/fn/LazyList.mlp (finally back to std/*.mlp) ============="
-"=== mlcpp: BEGIN ./std/fn/ArgIterator.mlp ===================================="
 
-
-
-
-
-
+"=== mlcpp: BEGIN ./std/fn/Iterator.mlp ======================================="
 var ArgIterator (args...):{
     var args LazyList(args...)
 
     var Arg? (arg):{
         Optional($true, arg)
-    }
-    var END {
-        Optional($false, _)
     }
 
     var next (peek?):{
@@ -193,13 +300,79 @@ var ArgIterator (args...):{
     next
 }
 
+-- increasing range from "from" up to "to" included
+var RangeIterator<= (from, to):{
+    var range LazyRange<=(from, to)
+
+    var Number? (n):{
+        Optional($true, n)
+    }
+
+    var next (peek?):{
+        tern(none?(range), END, {
+            var res left(some(range))
+            peek? || {
+                range := right(some(range))
+            }
+            Number?(res)
+        })
+    }
+
+    next
+}
+
 var next (iterator):{
     iterator(0)
 }
 var peek (iterator):{
     iterator(1)
 }
-"=== mlcpp: END ./std/fn/ArgIterator.mlp (finally back to std/*.mlp) =========="
+
+var foreach (OUT iterable, fn):{
+    var foreach (OUT container, fn):{
+        tern(len(container) == 0, container, {
+            -- we create a local var in case..
+            -- ..user has passed by delay rather..
+            -- ..than ref (otherwise "lvaluing $nil" error)
+            var container' container
+
+            var nth 1
+            until(():{nth > len(container)}, ():{
+                fn(&container'[#nth])
+                nth += 1
+            })
+
+            container := container'
+            container'
+        })
+    }
+
+    var Iterator::foreach (iterator, fn):{
+        var curr next(iterator)
+        until(():{none?(curr)}, ():{
+            fn(some(curr))
+            curr := next(iterator)
+        })
+    }
+
+    var is_lambda (x):{
+        Str(x) == "<lambda>"
+    }
+
+    !tern(is_lambda(iterable), foreach(&iterable, fn), {
+        Iterator::foreach(iterable, fn)
+    })
+}
+
+var foreach' {
+    var foreach' (fn, container):{
+        foreach(container, fn)
+    }
+
+    curry(foreach')
+}
+
+"=== mlcpp: END ./std/fn/Iterator.mlp (finally back to std/*.mlp) ============="
 
 "=== mlcpp: BEGIN ./std/op/cmp.mlp ============================================"
 
@@ -301,101 +474,3 @@ var - {
 }
 
 "=== mlcpp: END ./std/op/sub.mlp (finally back to std/*.mlp) =================="
-"=== mlcpp: BEGIN ./std/op/in.mlp ============================================="
-
-
-
-var in (elem, container):{
-    var i 1
-    var found $false
-    until(():{found || i > len(container)}, ():{
-        found ||= container[#i] == elem
-        i += 1
-    })
-    found
-}
-
-"=== mlcpp: END ./std/op/in.mlp (finally back to std/*.mlp) ==================="
-"=== mlcpp: BEGIN ./std/op/pipe.mlp ==========================================="
-
-var |> (input, fn):{
-    fn(input)
-}
-"=== mlcpp: END ./std/op/pipe.mlp (finally back to std/*.mlp) ================="
-
-"=== mlcpp: BEGIN ./std/fn/curry.mlp =========================================="
-
-
-
-var curry (fn):{
-    var curried _
-    curried := (args...):{
-        !tern($#varargs - len(fn), fn(args...), {
-            (args2...):{curried(args..., args2...)}
-        })
-    }
-    curried
-}
-
-var stdout {
-    curry((x):{
-        print(x)
-    })
-}
-
-"=== mlcpp: END ./std/fn/curry.mlp (finally back to std/*.mlp) ================"
-"=== mlcpp: BEGIN ./std/fn/delay.mlp =========================================="
-
-var delay (x):{
-    var delayed ():{x}
-    delayed
-}
-
-"=== mlcpp: END ./std/fn/delay.mlp (finally back to std/*.mlp) ================"
-
-"=== mlcpp: BEGIN ./std/fn/ascii.mlp =========================================="
-
-
-
-
-var ascii (c):{
-    Int(Char(c))
-}
-
-var lower (OUT c):{
-    tern(ascii(c) >= ascii('a), c, {
-        var local_c c
-        local_c := Char(local_c) + (ascii('a) - ascii('A))
-        local_c
-    })
-}
-
-var upper (OUT c):{
-    tern(ascii(c) <= ascii('Z), c, {
-        var local_c c
-        local_c := Char(local_c) - (ascii('a) - ascii('A))
-        local_c
-    })
-}
-"=== mlcpp: END ./std/fn/ascii.mlp (finally back to std/*.mlp) ================"
-"=== mlcpp: BEGIN ./std/fn/ByteStr.mlp ========================================"
-
-
-
-var ByteStr {
-    var ByteStr-1+ _
-
-    var ByteStr (xs...):{
-        !tern($#varargs, "", {
-            ByteStr-1+(xs...)
-        })
-    }
-
-    ByteStr-1+ := (x, xs...):{
-        Char(x) + ByteStr(xs...)
-    }
-
-    ByteStr
-}
-
-"=== mlcpp: END ./std/fn/ByteStr.mlp (finally back to std/*.mlp) =============="

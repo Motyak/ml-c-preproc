@@ -36,3 +36,7 @@ var left (pair):{
 var right (pair):{
     pair(1)
 }
+
+"package main"
+
+print("Pair.mlp")
