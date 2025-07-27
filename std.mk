@@ -7,23 +7,23 @@ MAKEFLAGS += -j16
 
 MODULES := \
 std/fn/tern \
-std/fn/loops \
+std/fn/curry \
+std/op/pipe \
+std/fn/delay \
 \
+std/fn/loops \
+std/fn/ascii \
+std/fn/ByteStr \
 std/fn/Pair \
 std/fn/Optional \
+\
+std/op/in \
 std/fn/LazyList \
-std/fn/ArgIterator \
+\
+std/fn/Iterator \
 \
 std/op/cmp \
 std/op/sub \
-std/op/in \
-std/op/pipe \
-\
-std/fn/curry \
-std/fn/delay \
-\
-std/fn/ascii \
-std/fn/ByteStr \
 \
 std/* \
 

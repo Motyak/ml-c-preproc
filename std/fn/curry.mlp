@@ -1,11 +1,13 @@
 #pragma once
 
-#include <std/op/sub.mlp>
-
 var curry (fn):{
+    var - (lhs, rhs):{
+        lhs + rhs + -2 * rhs
+    }
+
     var curried _
     curried := (args...):{
-        !tern($#varargs - len(fn), fn(args...), {
+        tern($#varargs - len(fn) == 0, fn(args...), {
             (args2...):{curried(args..., args2...)}
         })
     }

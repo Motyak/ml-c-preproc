@@ -1,0 +1,21 @@
+
+             iterable
+                |  
+   +------------+---------------+
+   |                            |  
+Iterator                    container
+                                |
+                          +-----+-----+
+                          |     |     |
+                        Str   List   Map
+
+
+           subscriptable
+                 |
+   +-------------+-------------+
+   |                           |
+LazyList                   container
+                               |
+                         +-----+-----+
+                         |     |     |
+                        Str   List   Map

@@ -1,0 +1,146 @@
+#pragma once
+
+#include <std/fn/LazyList.mlp>
+#include <std/fn/Pair.mlp>
+#include <std/fn/Optional.mlp>
+#include <std/fn/loops.mlp>
+#include <std/fn/curry.mlp>
+#include <std/fn/tern.mlp>
+
+var ArgIterator (args...):{
+    var args LazyList(args...)
+
+    var Arg? (arg):{
+        Optional($true, arg)
+    }
+
+    var next (peek?):{
+        tern(none?(args), END, {
+            var res left(some(args))
+            peek? || {
+                args := right(some(args))
+            }
+            Arg?(res)
+        })
+    }
+
+    next
+}
+
+-- increasing range from "from" up to "to" included
+var RangeIterator<= (from, to):{
+    var range LazyRange<=(from, to)
+
+    var Number? (n):{
+        Optional($true, n)
+    }
+
+    var next (peek?):{
+        tern(none?(range), END, {
+            var res left(some(range))
+            peek? || {
+                range := right(some(range))
+            }
+            Number?(res)
+        })
+    }
+
+    next
+}
+
+var next (iterator):{
+    iterator(0)
+}
+var peek (iterator):{
+    iterator(1)
+}
+
+var foreach (OUT iterable, fn):{
+    var foreach (OUT container, fn):{
+        tern(len(container) == 0, container, {
+            -- we create a local var in case..
+            -- ..user has passed by delay rather..
+            -- ..than ref (otherwise "lvaluing $nil" error)
+            var container' container
+
+            var nth 1
+            until(():{nth > len(container)}, ():{
+                fn(&container'[#nth])
+                nth += 1
+            })
+
+            container := container'
+            container'
+        })
+    }
+
+    var Iterator::foreach (iterator, fn):{
+        var curr next(iterator)
+        until(():{none?(curr)}, ():{
+            fn(some(curr))
+            curr := next(iterator)
+        })
+    }
+
+    var is_lambda (x):{
+        Str(x) == "<lambda>"
+    }
+
+    !tern(is_lambda(iterable), foreach(&iterable, fn), {
+        Iterator::foreach(iterable, fn)
+    })
+}
+
+var foreach' {
+    var foreach' (fn, container):{
+        foreach(container, fn)
+    }
+
+    curry(foreach')
+}
+
+package main
+
+{
+    var str "fds"
+    var list [1, 2, 3]
+    var it RangeIterator<=(1, 4)
+
+    foreach(&str, (OUT c):{c := 'x})
+    print(str)
+    var newstr foreach(str, (OUT c):{c := 'y})
+    print(str)
+    print(newstr)
+
+    foreach(&list, (OUT n):{n := 0})
+    print(list)
+    var newlist foreach(list, (OUT n):{n := 7})
+    print(list)
+    print(newlist)
+
+    foreach(it, (x):{print(x)})
+}
+
+"test curryable foreach"
+
+{
+    var |> (input, fn):{
+        fn(input)
+    }
+
+    var ascii (c):{
+        Int(Char(c))
+    }
+
+    var upper (OUT c):{
+        var - (lhs, rhs):{
+            lhs + rhs + -2 * rhs
+        }
+
+        c := Char(c) - (ascii('a) - ascii('A))
+    }
+
+    var str "fds"
+
+    print(str |> foreach'(upper))
+}
