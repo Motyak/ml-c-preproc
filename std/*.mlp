@@ -1,8 +1,8 @@
 #include <std/fn/tern.mlp>
-#include <std/fn/curry.mlp>
 #include <std/op/pipe.mlp>
 #include <std/fn/delay.mlp>
 
+#include <std/fn/curry.mlp>
 #include <std/fn/loops.mlp>
 #include <std/fn/ascii.mlp>
 #include <std/fn/ByteStr.mlp>

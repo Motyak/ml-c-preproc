@@ -7,10 +7,10 @@ MAKEFLAGS += -j16
 
 MODULES := \
 std/fn/tern \
-std/fn/curry \
 std/op/pipe \
 std/fn/delay \
 \
+std/fn/curry \
 std/fn/loops \
 std/fn/ascii \
 std/fn/ByteStr \
