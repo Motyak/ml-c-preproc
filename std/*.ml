@@ -15,7 +15,24 @@ var not (bool):{
     tern(bool, $false, $true)
 }
 "=== mlcpp: END ./std/fn/tern.mlp (finally back to std/*.mlp) ================="
+"=== mlcpp: BEGIN ./std/op/pipe.mlp ==========================================="
+
+var |> (input, fn):{
+    fn(input)
+}
+"=== mlcpp: END ./std/op/pipe.mlp (finally back to std/*.mlp) ================="
+"=== mlcpp: BEGIN ./std/fn/delay.mlp =========================================="
+
+var delay (x):{
+    var delayed ():{x}
+    delayed
+}
+
+"=== mlcpp: END ./std/fn/delay.mlp (finally back to std/*.mlp) ================"
+
 "=== mlcpp: BEGIN ./std/fn/curry.mlp =========================================="
+
+
 
 var curry (fn):{
     var - (lhs, rhs):{
@@ -38,21 +55,6 @@ var stdout {
 }
 
 "=== mlcpp: END ./std/fn/curry.mlp (finally back to std/*.mlp) ================"
-"=== mlcpp: BEGIN ./std/op/pipe.mlp ==========================================="
-
-var |> (input, fn):{
-    fn(input)
-}
-"=== mlcpp: END ./std/op/pipe.mlp (finally back to std/*.mlp) ================="
-"=== mlcpp: BEGIN ./std/fn/delay.mlp =========================================="
-
-var delay (x):{
-    var delayed ():{x}
-    delayed
-}
-
-"=== mlcpp: END ./std/fn/delay.mlp (finally back to std/*.mlp) ================"
-
 "=== mlcpp: BEGIN ./std/fn/loops.mlp =========================================="
 
 
@@ -94,28 +96,39 @@ var ascii (c):{
 }
 
 var lower (OUT c):{
+    var >= (lhs, rhs):{
+        lhs > rhs || lhs == rhs
+    }
+
     var - (lhs, rhs):{
         lhs + rhs + -2 * rhs
     }
 
     tern(ascii(c) >= ascii('a), c, {
-        var local_c c
-        local_c := Char(local_c) + (ascii('a) - ascii('A))
+        var local_c Char(c)
+        local_c += ascii('a) - ascii('A)
+        c := local_c
         local_c
     })
 }
 
 var upper (OUT c):{
+    var <= (lhs, rhs):{
+        not(lhs > rhs)
+    }
+
     var - (lhs, rhs):{
         lhs + rhs + -2 * rhs
     }
 
     tern(ascii(c) <= ascii('Z), c, {
-        var local_c c
-        local_c := Char(local_c) - (ascii('a) - ascii('A))
+        var local_c Char(c)
+        local_c -= ascii('a) - ascii('A)
+        c := local_c
         local_c
     })
 }
+
 "=== mlcpp: END ./std/fn/ascii.mlp (finally back to std/*.mlp) ================"
 "=== mlcpp: BEGIN ./std/fn/ByteStr.mlp ========================================"
 
