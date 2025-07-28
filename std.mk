@@ -17,11 +17,13 @@ std/fn/ByteStr \
 std/fn/Pair \
 std/fn/Optional \
 \
-std/op/in \
-std/fn/LazyList \
+std/fn/Stream \
 \
+std/op/range \
+std/fn/functional \
 std/fn/Iterator \
 \
+std/op/in \
 std/op/cmp \
 std/op/sub \
 \

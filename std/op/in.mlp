@@ -1,18 +1,54 @@
 #pragma once
 
+#include <std/fn/Iterator.mlp>
+#include <std/fn/Optional.mlp>
 #include <std/fn/loops.mlp>
 
-var in (elem, container):{
-    var i 1
-    var found $false
-    until(():{found || i > len(container)}, ():{
-        found ||= container[#i] == elem
-        i += 1
+var in (elem, subscriptable):{
+    var in (elem, container):{
+        var i 1
+        var found $false
+        until(():{found || i > len(container)}, ():{
+            found ||= container[#i] == elem
+            i += 1
+        })
+        found
+    }
+
+    var Stream::in (elem, stream):{
+        var it Iterator(stream)
+        var found $false
+        var curr next(it)
+        until(():{found || none?(curr)}, ():{
+            found ||= elem == some(curr)
+            curr := next(it)
+        })
+        found
+    }
+
+    var is_lambda (x):{
+        Str(x) == "<lambda>"
+    }
+
+    !tern(is_lambda(subscriptable), in(elem, subscriptable), {
+        Stream::in(elem, subscriptable)
     })
-    found
 }
 
 package main
 
+var |> (input, fn):{
+    fn(input)
+}
+
 "g" in "sdf"
 "d" in "sdf"
+
+var .. LazyRange<=
+
+foreach(1 .. 10, (i):{
+    print("wow amazing, curr val is: " + i)
+})
+
+7 in 1 .. 10 |> stdout
+11 in 1 .. 10 |> stdout

@@ -1,21 +1,9 @@
-
-             iterable
-                |
-   +------------+---------------+
-   |                            |
-Iterator                    container
-                                |
-                          +-----+-----+
-                          |     |     |
-                        Str   List   Map
-
-
            subscriptable
                  |
    +-------------+-------------+
    |                           |
-LazyList                   container
+ Stream                    container
                                |
                          +-----+-----+
                          |     |     |
-                        Str   List   Map
+                        Str   List  Map

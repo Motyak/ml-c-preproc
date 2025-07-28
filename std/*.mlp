@@ -9,10 +9,11 @@
 #include <std/fn/Pair.mlp>
 #include <std/fn/Optional.mlp>
 
-#include <std/op/in.mlp>
-#include <std/fn/LazyList.mlp>
+#include <std/fn/Stream.mlp>
 
+#include <std/fn/functional.mlp>
 #include <std/fn/Iterator.mlp>
 
+#include <std/op/in.mlp>
 #include <std/op/cmp.mlp>
 #include <std/op/sub.mlp>

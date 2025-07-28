@@ -1,0 +1,82 @@
+#pragma once
+
+#include <std/fn/Pair.mlp>
+#include <std/fn/Optional.mlp>
+#include <std/fn/tern.mlp>
+
+var Pair? (left, right):{
+    Optional($true, Pair(left, right))
+}
+var END {
+    Optional($false, _)
+}
+
+var LazyList {
+    var LazyList-1+ _
+
+    var LazyList (xs...):{
+        tern($#varargs == 0, END, {
+            LazyList-1+(xs...)
+        })
+    }
+
+    LazyList-1+ := (x, xs...):{
+        Pair?(x, LazyList(xs...))
+    }
+
+    LazyList
+}
+
+-- increasing range from "from" up to "to" included
+var LazyRange<= _
+LazyRange<= := (from, to):{
+    tern(from > to, END, {
+        Pair?(from, LazyRange<=(from + 1, to))
+    })
+}
+
+var subscript (subscriptable, nth):{
+    var - (lhs, rhs):{
+        lhs + rhs + -2 * rhs
+    }
+
+    nth > 0 || ERR("nth should be greater than zero")
+
+    var Stream::subscript (stream, nth):{
+        var subscript_rec _
+        subscript_rec := (stream, nth):{
+            tern(nth == 1, left(some(stream)), {
+                subscript_rec(right(some(stream)), nth - 1)
+            })
+        }
+        subscript_rec(stream, nth)
+    }
+
+    var is_lambda (x):{
+        Str(x) == "<lambda>"
+    }
+
+    !tern(is_lambda(subscriptable), subscriptable[#nth], {
+        Stream::subscript(subscriptable, nth)
+    })
+}
+
+package main
+
+"=== testing subscript on a LazyList ==="
+
+var id (x):{
+    print("evaluated: " + x)
+    x
+}
+
+var stream LazyList(1, id(2), 3)
+
+"we don't need to eval #2 to eval #3"
+print(subscript(stream, 3))
+
+"#2 gets evaluated here"
+print(subscript(stream, 2))
+
+"once an element has been evaluated once, it's not re-evaluated"
+print(subscript(stream, 2))
