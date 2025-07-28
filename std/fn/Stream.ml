@@ -39,7 +39,7 @@ var right (pair):{
     pair(1)
 }
 
-"=== mlcpp: END ./std/fn/Pair.mlp (finally back to std/fn/LazyList.mlp) ======="
+"=== mlcpp: END ./std/fn/Pair.mlp (finally back to std/fn/Stream.mlp) ========="
 "=== mlcpp: BEGIN ./std/fn/Optional.mlp ======================================="
 
 
@@ -79,7 +79,7 @@ var some (opt):{
     opt(1)()
 }
 
-"=== mlcpp: END ./std/fn/Optional.mlp (finally back to std/fn/LazyList.mlp) ==="
+"=== mlcpp: END ./std/fn/Optional.mlp (finally back to std/fn/Stream.mlp) ====="
 
 
 var Pair? (left, right):{
@@ -114,23 +114,47 @@ LazyRange<= := (from, to):{
 }
 
 var subscript (subscriptable, nth):{
-    nth >= 1 || ERR("nth should be greater than zero")
+    var - (lhs, rhs):{
+        lhs + rhs + -2 * rhs
+    }
 
-    var LazyList::subscript (ll, nth):{
+    nth > 0 || ERR("nth should be greater than zero")
+
+    var Stream::subscript (stream, nth):{
         var subscript_rec _
-        subscript_rec := (ll, nth):{
-            tern(nth == 1, left(some(ll)), {
-                subscript_rec(right(some(ll)), nth - 1)
+        subscript_rec := (stream, nth):{
+            tern(nth == 1, left(some(stream)), {
+                subscript_rec(right(some(stream)), nth - 1)
             })
         }
-        subscript_rec(ll, nth)
+        subscript_rec(stream, nth)
     }
 
     var is_lambda (x):{
         Str(x) == "<lambda>"
     }
 
-    !tern(is_lambda(iterable), iterable[#nth], {
-        LazyList::subscript(iterable, nth)
+    !tern(is_lambda(subscriptable), subscriptable[#nth], {
+        Stream::subscript(subscriptable, nth)
     })
 }
+
+"package main"
+
+"=== testing subscript on a LazyList ==="
+
+var id (x):{
+    print("evaluated: " + x)
+    x
+}
+
+var stream LazyList(1, id(2), 3)
+
+"we don't need to eval #2 to eval #3"
+print(subscript(stream, 3))
+
+"#2 gets evaluated here"
+print(subscript(stream, 2))
+
+"once an element has been evaluated once, it's not re-evaluated"
+print(subscript(stream, 2))

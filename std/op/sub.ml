@@ -1,7 +1,7 @@
 
 "=== mlcpp: BEGIN ./std/fn/Iterator.mlp ======================================="
 
-"=== mlcpp: BEGIN ./std/fn/LazyList.mlp ======================================="
+"=== mlcpp: BEGIN ./std/fn/Stream.mlp ========================================="
 
 "=== mlcpp: BEGIN ./std/fn/Pair.mlp ==========================================="
 
@@ -43,7 +43,7 @@ var right (pair):{
     pair(1)
 }
 
-"=== mlcpp: END ./std/fn/Pair.mlp (back to ./std/fn/LazyList.mlp) ============="
+"=== mlcpp: END ./std/fn/Pair.mlp (back to ./std/fn/Stream.mlp) ==============="
 "=== mlcpp: BEGIN ./std/fn/Optional.mlp ======================================="
 
 
@@ -83,7 +83,7 @@ var some (opt):{
     opt(1)()
 }
 
-"=== mlcpp: END ./std/fn/Optional.mlp (back to ./std/fn/LazyList.mlp) ========="
+"=== mlcpp: END ./std/fn/Optional.mlp (back to ./std/fn/Stream.mlp) ==========="
 
 
 var Pair? (left, right):{
@@ -118,28 +118,106 @@ LazyRange<= := (from, to):{
 }
 
 var subscript (subscriptable, nth):{
-    nth >= 1 || ERR("nth should be greater than zero")
+    var - (lhs, rhs):{
+        lhs + rhs + -2 * rhs
+    }
 
-    var LazyList::subscript (ll, nth):{
+    nth > 0 || ERR("nth should be greater than zero")
+
+    var Stream::subscript (stream, nth):{
         var subscript_rec _
-        subscript_rec := (ll, nth):{
-            tern(nth == 1, left(some(ll)), {
-                subscript_rec(right(some(ll)), nth - 1)
+        subscript_rec := (stream, nth):{
+            tern(nth == 1, left(some(stream)), {
+                subscript_rec(right(some(stream)), nth - 1)
             })
         }
-        subscript_rec(ll, nth)
+        subscript_rec(stream, nth)
     }
 
     var is_lambda (x):{
         Str(x) == "<lambda>"
     }
 
-    !tern(is_lambda(iterable), iterable[#nth], {
-        LazyList::subscript(iterable, nth)
+    !tern(is_lambda(subscriptable), subscriptable[#nth], {
+        Stream::subscript(subscriptable, nth)
     })
 }
-"=== mlcpp: END ./std/fn/LazyList.mlp (back to ./std/fn/Iterator.mlp) ========="
 
+"=== mlcpp: END ./std/fn/Stream.mlp (back to ./std/fn/Iterator.mlp) ==========="
+
+
+
+
+var Iterator (subscriptable):{
+    var Elem? (val):{
+        Optional($true, val)
+    }
+
+    var Iterator (container):{
+        var nth 1
+
+        var next (peek?):{
+            tern(nth > len(container), END, {
+                var res container[#nth]
+                peek? || {nth += 1}
+                Elem?(res)
+            })
+        }
+
+        next
+    }
+
+    var Iterator::fromStream (stream):{
+        var next (peek?):{
+            tern(none?(stream), END, {
+                var res left(some(stream))
+                peek? || {
+                    stream := right(some(stream))
+                }
+                Elem?(res)
+            })
+        }
+
+        next
+    }
+
+    var is_lambda (x):{
+        Str(x) == "<lambda>"
+    }
+
+    !tern(is_lambda(subscriptable), Iterator(subscriptable), {
+        Iterator::fromStream(subscriptable)
+    })
+}
+
+var ArgIterator (args...):{
+    var args LazyList(args...)
+
+    var Arg? (arg):{
+        Optional($true, arg)
+    }
+
+    var next (peek?):{
+        tern(none?(args), END, {
+            var res left(some(args))
+            peek? || {
+                args := right(some(args))
+            }
+            Arg?(res)
+        })
+    }
+
+    next
+}
+
+var next (iterator):{
+    iterator(0)
+}
+var peek (iterator):{
+    iterator(1)
+}
+
+"=== mlcpp: END ./std/fn/Iterator.mlp (finally back to std/op/sub.mlp) ========"
 
 "=== mlcpp: BEGIN ./std/fn/loops.mlp =========================================="
 
@@ -172,129 +250,7 @@ do_until := (do, cond):{
     do()
     until(cond, do)
 }
-"=== mlcpp: END ./std/fn/loops.mlp (back to ./std/fn/Iterator.mlp) ============"
-"=== mlcpp: BEGIN ./std/fn/curry.mlp =========================================="
-
-
-
-var curry (fn):{
-    var - (lhs, rhs):{
-        lhs + rhs + -2 * rhs
-    }
-
-    var curried _
-    curried := (args...):{
-        tern($#varargs - len(fn) == 0, fn(args...), {
-            (args2...):{curried(args..., args2...)}
-        })
-    }
-    curried
-}
-
-var stdout {
-    curry((x):{
-        print(x)
-    })
-}
-
-"=== mlcpp: END ./std/fn/curry.mlp (back to ./std/fn/Iterator.mlp) ============"
-
-
-var ArgIterator (args...):{
-    var args LazyList(args...)
-
-    var Arg? (arg):{
-        Optional($true, arg)
-    }
-
-    var next (peek?):{
-        tern(none?(args), END, {
-            var res left(some(args))
-            peek? || {
-                args := right(some(args))
-            }
-            Arg?(res)
-        })
-    }
-
-    next
-}
-
--- increasing range from "from" up to "to" included
-var RangeIterator<= (from, to):{
-    var range LazyRange<=(from, to)
-
-    var Number? (n):{
-        Optional($true, n)
-    }
-
-    var next (peek?):{
-        tern(none?(range), END, {
-            var res left(some(range))
-            peek? || {
-                range := right(some(range))
-            }
-            Number?(res)
-        })
-    }
-
-    next
-}
-
-var next (iterator):{
-    iterator(0)
-}
-var peek (iterator):{
-    iterator(1)
-}
-
-var foreach (OUT iterable, fn):{
-    var foreach (OUT container, fn):{
-        tern(len(container) == 0, container, {
-            -- we create a local var in case..
-            -- ..user has passed by delay rather..
-            -- ..than ref (otherwise "lvaluing $nil" error)
-            var container' container
-
-            var nth 1
-            until(():{nth > len(container)}, ():{
-                fn(&container'[#nth])
-                nth += 1
-            })
-
-            container := container'
-            container'
-        })
-    }
-
-    var Iterator::foreach (iterator, fn):{
-        var curr next(iterator)
-        until(():{none?(curr)}, ():{
-            fn(some(curr))
-            curr := next(iterator)
-        })
-    }
-
-    var is_lambda (x):{
-        Str(x) == "<lambda>"
-    }
-
-    !tern(is_lambda(iterable), foreach(&iterable, fn), {
-        Iterator::foreach(iterable, fn)
-    })
-}
-
-var foreach' {
-    var foreach' (fn, container):{
-        foreach(container, fn)
-    }
-
-    curry(foreach')
-}
-
-"=== mlcpp: END ./std/fn/Iterator.mlp (finally back to std/op/sub.mlp) ========"
-
-
+"=== mlcpp: END ./std/fn/loops.mlp (finally back to std/op/sub.mlp) ==========="
 
 
 var - {

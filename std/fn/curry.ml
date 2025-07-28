@@ -17,24 +17,37 @@ var not (bool):{
 }
 "=== mlcpp: END ./std/fn/tern.mlp (finally back to std/fn/curry.mlp) =========="
 
-var curry (fn):{
+-- useful for variadic functions
+var curry_fixed (fixedParams, fn):{
     var - (lhs, rhs):{
         lhs + rhs + -2 * rhs
     }
 
+    var >= (lhs, rhs):{
+        lhs > rhs || lhs == rhs
+    }
+
+    var remaining {
+        tern(fixedParams > len(fn), fixedParams, {
+            len(fn) - fixedParams
+        })
+    }
+
     var curried _
     curried := (args...):{
-        tern($#varargs - len(fn) == 0, fn(args...), {
+        tern($#varargs - len(fn) >= remaining, fn(args...), {
             (args2...):{curried(args..., args2...)}
         })
     }
     curried
 }
 
+var curry (fn):{
+    curry_fixed(len(fn), fn)
+}
+
 var stdout {
-    curry((x):{
-        print(x)
-    })
+    curry_fixed(1, print)
 }
 
 "package main"
