@@ -1,4 +1,6 @@
 
+"=== mlcpp: BEGIN ./std/fn/Iterator.mlp ======================================="
+
 "=== mlcpp: BEGIN ./std/fn/Stream.mlp ========================================="
 
 "=== mlcpp: BEGIN ./std/fn/Pair.mlp ==========================================="
@@ -185,6 +187,177 @@ var subscript' {
     curry(subscript)
 }
 
-"=== mlcpp: END ./std/fn/Stream.mlp (finally back to std/op/range.mlp) ========"
+"=== mlcpp: END ./std/fn/Stream.mlp (back to ./std/fn/Iterator.mlp) ==========="
+
+
+
+
+var Iterator (subscriptable):{
+    var Elem? (val):{
+        Optional($true, val)
+    }
+
+    var Iterator (container):{
+        var nth 1
+
+        var next (peek?):{
+            tern(nth > len(container), END, {
+                var res container[#nth]
+                peek? || {nth += 1}
+                Elem?(res)
+            })
+        }
+
+        next
+    }
+
+    var Iterator::fromStream (stream):{
+        var next (peek?):{
+            tern(none?(stream), END, {
+                var res left(some(stream))
+                peek? || {
+                    stream := right(some(stream))
+                }
+                Elem?(res)
+            })
+        }
+
+        next
+    }
+
+    var is_lambda (x):{
+        Str(x) == "<lambda>"
+    }
+
+    !tern(is_lambda(subscriptable), Iterator(subscriptable), {
+        Iterator::fromStream(subscriptable)
+    })
+}
+
+var ArgIterator (args...):{
+    var args LazyList(args...)
+
+    var Arg? (arg):{
+        Optional($true, arg)
+    }
+
+    var next (peek?):{
+        tern(none?(args), END, {
+            var res left(some(args))
+            peek? || {
+                args := right(some(args))
+            }
+            Arg?(res)
+        })
+    }
+
+    next
+}
+
+var next (iterator):{
+    iterator(0)
+}
+var peek (iterator):{
+    iterator(1)
+}
+
+"=== mlcpp: END ./std/fn/Iterator.mlp (finally back to std/fn/algorithm.mlp) ==="
+
+"=== mlcpp: BEGIN ./std/fn/loops.mlp =========================================="
+
+
+
+var while _
+while := (cond, do):{
+    cond() && {
+        do()
+        while(cond, do)
+    }
+}
+
+var until _
+until := (cond, do):{
+    cond() || {
+        do()
+        until(cond, do)
+    }
+}
+
+var do_while _
+do_while := (do, cond):{
+    do()
+    while(cond, do)
+}
+
+var do_until _
+do_until := (do, cond):{
+    do()
+    until(cond, do)
+}
+"=== mlcpp: END ./std/fn/loops.mlp (finally back to std/fn/algorithm.mlp) ====="
+
+var any {
+    var any (pred, subscriptable):{
+        var it Iterator(subscriptable)
+        var any $false
+        var curr next(it)
+        until(():{any || none?(curr)}, ():{
+            tern(pred(some(curr)), {any := $true}, {
+                curr := next(it)
+            })
+        })
+        any
+    }
+    curry(any)
+}
+
+var all {
+    var all (pred, subscriptable):{
+        var it Iterator(subscriptable)
+        var any $false
+        var curr next(it)
+        until(():{any || none?(curr)}, ():{
+            !tern(pred(some(curr)), {any := $true}, {
+                curr := next(it)
+            })
+        })
+        not(any)
+    }
+    curry(all)
+}
+
+"package main"
+
+var |> (input, fn):{
+    fn(input)
+}
 
 var .. LazyRange<=
+
+var is_even (n):{
+    var in (elem, container):{
+        var i 1
+        var found $false
+        until(():{found || i > len(container)}, ():{
+            found ||= container[#i] == elem
+            i += 1
+        })
+        found
+    }
+    Str(Int(n))[#-1] in "02468"
+}
+
+var id (x):{
+    print("evaluated: " + x)
+    x
+}
+
+"=== testing any ==="
+[1, 3] |> any(is_even) |> stdout
+-- short circuit
+LazyList(1, 2, id(3)) |> any(is_even) |> stdout
+
+"=== testing all ==="
+[2, 4, 6] |> all(is_even) |> stdout
+-- short circuit
+LazyList(2, 5, id(6)) |> all(is_even) |> stdout

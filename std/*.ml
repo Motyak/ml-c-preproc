@@ -29,6 +29,13 @@ var delay (x):{
 }
 
 "=== mlcpp: END ./std/fn/delay.mlp (finally back to std/*.mlp) ================"
+"=== mlcpp: BEGIN ./std/fn/ERR.mlp ============================================"
+
+var ERR (msg):{
+    print("ERR: " + msg)
+    exit(1)
+}
+"=== mlcpp: END ./std/fn/ERR.mlp (finally back to std/*.mlp) =================="
 
 "=== mlcpp: BEGIN ./std/fn/curry.mlp =========================================="
 
@@ -236,6 +243,7 @@ var some (opt):{
 
 
 
+
 var Pair? (left, right):{
     Optional($true, Pair(left, right))
 }
@@ -262,19 +270,21 @@ var LazyList {
 -- increasing range from "from" up to "to" included
 var LazyRange<= _
 LazyRange<= := (from, to):{
+    from := Int(from)
+    to := Int(to)
     tern(from > to, END, {
         Pair?(from, LazyRange<=(from + 1, to))
     })
 }
 
 var subscript (subscriptable, nth):{
+    nth == 0 && ERR("nth should differ from zero (less or greater)")
     var - (lhs, rhs):{
         lhs + rhs + -2 * rhs
     }
 
-    nth > 0 || ERR("nth should be greater than zero")
-
     var Stream::subscript (stream, nth):{
+        nth > 0 || ERR("nth should be greater than zero")
         var subscript_rec _
         subscript_rec := (stream, nth):{
             tern(nth == 1, left(some(stream)), {
@@ -293,6 +303,10 @@ var subscript (subscriptable, nth):{
     })
 }
 
+var subscript' {
+    curry(subscript)
+}
+
 "=== mlcpp: END ./std/fn/Stream.mlp (finally back to std/*.mlp) ==============="
 
 "=== mlcpp: BEGIN ./std/fn/functional.mlp ====================================="
@@ -301,42 +315,6 @@ var subscript (subscriptable, nth):{
 
 
 
-
--- var foreach (OUT subscriptable, fn):{
-    var foreach (OUT container, fn):{
-        tern(len(container) == 0, container, {
-            -- we create a local var in case..
-            -- ..user has passed by delay rather..
-            -- ..than ref (otherwise "lvaluing $nil" error)
-            var container' container
-
-            var nth 1
-            until(():{nth > len(container)}, ():{
-                fn(&container'[#nth])
-                nth += 1
-            })
-
-            container := container'
-            container'
-        })
-    }
-
-    var Stream::foreach _
-    Stream::foreach := (stream, fn):{
-        tern(none?(stream), END, {
-            fn(left(some(stream)))
-            Stream::foreach(right(some(stream)), fn)
-        })
-    }
-
-    var is_lambda (x):{
-        Str(x) == "<lambda>"
-    }
-
-    !tern(is_lambda(subscriptable), foreach(&subscriptable, fn), {
-        Stream::foreach(&subscriptable, fn)
-    })
-}
 
 var foreach (OUT subscriptable, fn):{
     var foreach (OUT container, fn):{
@@ -350,12 +328,16 @@ var foreach (OUT subscriptable, fn):{
         })
     }
 
-    var Stream::foreach _
-    Stream::foreach := (stream, fn):{
-        tern(none?(stream), END, {
-            fn(left(some(stream)))
-            Stream::foreach(right(some(stream)), fn)
-        })
+    var Stream::foreach (stream, fn):{
+        var foreach_rec _
+        foreach_rec := (stream, fn):{
+            tern(none?(stream), END, {
+                fn(left(some(stream)))
+                foreach_rec(right(some(stream)), fn)
+            })
+        }
+        foreach_rec(stream, fn)
+        stream
     }
 
     var is_lambda (x):{
@@ -448,6 +430,104 @@ var filter {
     curry(filter)
 }
 
+var reduce {
+    var reduce (fn, acc, subscriptable):{
+        foreach(subscriptable, (curr):{
+            acc := fn(acc, curr)
+        })
+        acc
+    }
+    curry(reduce)
+}
+
+var min (a, b, others...):{
+    var < (lhs, rhs):{
+        not(lhs > rhs || lhs == rhs)
+    }
+    var min (lhs, rhs):{
+        tern(lhs < rhs, lhs, rhs)
+    }
+    reduce(min, a, List(b, others...))
+}
+
+var count {
+    var count (pred, subscriptable):{
+        var fn (lhs, rhs):{
+            tern(pred(rhs), lhs + 1, lhs)
+        }
+        reduce(fn, 0, subscriptable)
+    }
+    curry(count)
+}
+
+var min' {
+    var min' (subscriptable):{
+        var < (lhs, rhs):{
+            not(lhs > rhs || lhs == rhs)
+        }
+        var min2 (lhs, rhs):{
+            tern(lhs < rhs, lhs, rhs)
+        }
+        var min (container):{
+            tern(len(container) == 0, ERR("empty container"), {
+                tern(len(container) == 1, container[#1], {
+                    reduce(min2, container[#1], container[#2..-1])
+                })
+            })
+        }
+        var Stream::min (stream):{
+            tern(none?(stream), ERR("empty stream"), {
+                reduce(min2, left(some(stream)), right(some(stream)))
+            })
+        }
+
+        var is_lambda (x):{
+            Str(x) == "<lambda>"
+        }
+
+        !tern(is_lambda(subscriptable), min(subscriptable), {
+            Stream::min(subscriptable)
+        })
+    }
+    curry(min')
+}
+
+var max (a, b, others...):{
+    var max (lhs, rhs):{
+        tern(lhs > rhs, lhs, rhs)
+    }
+    reduce(max, a, List(b, others...))
+}
+
+var max' {
+    var max' (subscriptable):{
+        var max2 (lhs, rhs):{
+            tern(lhs > rhs, lhs, rhs)
+        }
+        var max (container):{
+            tern(len(container) == 0, ERR("empty container"), {
+                tern(len(container) == 1, container[#1], {
+                    reduce(max2, container[#1], container[#2..-1])
+                })
+            })
+        }
+        var Stream::max (stream):{
+            tern(none?(stream), ERR("empty stream"), {
+                reduce(max2, left(some(stream)), right(some(stream)))
+            })
+        }
+
+        var is_lambda (x):{
+            Str(x) == "<lambda>"
+        }
+
+        !tern(is_lambda(subscriptable), max(subscriptable), {
+            Stream::max(subscriptable)
+        })
+    }
+    curry(max')
+}
+
 "=== mlcpp: END ./std/fn/functional.mlp (finally back to std/*.mlp) ==========="
 "=== mlcpp: BEGIN ./std/fn/Iterator.mlp ======================================="
 
@@ -527,7 +607,45 @@ var peek (iterator):{
 
 "=== mlcpp: END ./std/fn/Iterator.mlp (finally back to std/*.mlp) ============="
 
+"=== mlcpp: BEGIN ./std/fn/algorithm.mlp ======================================"
+
+
+
+
+
+var any {
+    var any (pred, subscriptable):{
+        var it Iterator(subscriptable)
+        var any $false
+        var curr next(it)
+        until(():{any || none?(curr)}, ():{
+            tern(pred(some(curr)), {any := $true}, {
+                curr := next(it)
+            })
+        })
+        any
+    }
+    curry(any)
+}
+
+var all {
+    var all (pred, subscriptable):{
+        var it Iterator(subscriptable)
+        var any $false
+        var curr next(it)
+        until(():{any || none?(curr)}, ():{
+            !tern(pred(some(curr)), {any := $true}, {
+                curr := next(it)
+            })
+        })
+        not(any)
+    }
+    curry(all)
+}
+
+"=== mlcpp: END ./std/fn/algorithm.mlp (finally back to std/*.mlp) ============"
 "=== mlcpp: BEGIN ./std/op/in.mlp ============================================="
+
 
 
 
@@ -549,8 +667,9 @@ var in (elem, subscriptable):{
         var found $false
         var curr next(it)
         until(():{found || none?(curr)}, ():{
-            found ||= elem == some(curr)
-            curr := next(it)
+            tern(elem == some(curr), {found := $true}, {
+                curr := next(it)
+            })
         })
         found
     }

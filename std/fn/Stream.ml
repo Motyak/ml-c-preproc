@@ -80,6 +80,44 @@ var some (opt):{
 }
 
 "=== mlcpp: END ./std/fn/Optional.mlp (finally back to std/fn/Stream.mlp) ====="
+"=== mlcpp: BEGIN ./std/fn/curry.mlp =========================================="
+
+
+
+-- useful for variadic functions
+var curry_fixed (fixedParams, fn):{
+    var - (lhs, rhs):{
+        lhs + rhs + -2 * rhs
+    }
+
+    var >= (lhs, rhs):{
+        lhs > rhs || lhs == rhs
+    }
+
+    var remaining {
+        tern(fixedParams > len(fn), fixedParams, {
+            len(fn) - fixedParams
+        })
+    }
+
+    var curried _
+    curried := (args...):{
+        tern($#varargs - len(fn) >= remaining, fn(args...), {
+            (args2...):{curried(args..., args2...)}
+        })
+    }
+    curried
+}
+
+var curry (fn):{
+    curry_fixed(len(fn), fn)
+}
+
+var stdout {
+    curry_fixed(1, print)
+}
+
+"=== mlcpp: END ./std/fn/curry.mlp (finally back to std/fn/Stream.mlp) ========"
 
 
 var Pair? (left, right):{
@@ -108,19 +146,21 @@ var LazyList {
 -- increasing range from "from" up to "to" included
 var LazyRange<= _
 LazyRange<= := (from, to):{
+    from := Int(from)
+    to := Int(to)
     tern(from > to, END, {
         Pair?(from, LazyRange<=(from + 1, to))
     })
 }
 
 var subscript (subscriptable, nth):{
+    nth == 0 && ERR("nth should differ from zero (less or greater)")
     var - (lhs, rhs):{
         lhs + rhs + -2 * rhs
     }
 
-    nth > 0 || ERR("nth should be greater than zero")
-
     var Stream::subscript (stream, nth):{
+        nth > 0 || ERR("nth should be greater than zero")
         var subscript_rec _
         subscript_rec := (stream, nth):{
             tern(nth == 1, left(some(stream)), {
@@ -137,6 +177,10 @@ var subscript (subscriptable, nth):{
     !tern(is_lambda(subscriptable), subscriptable[#nth], {
         Stream::subscript(subscriptable, nth)
     })
+}
+
+var subscript' {
+    curry(subscript)
 }
 
 "package main"

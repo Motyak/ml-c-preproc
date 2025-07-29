@@ -16,6 +16,7 @@ var strblock ```
     __LINE__
     __FILE__
     __COUNTER__
+    \U000020ac
 ```
 
 print(strblock)
