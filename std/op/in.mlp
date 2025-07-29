@@ -1,6 +1,7 @@
 #pragma once
 
 #include <std/fn/Iterator.mlp>
+#include <std/fn/functional.mlp>
 #include <std/fn/Optional.mlp>
 #include <std/fn/loops.mlp>
 
@@ -20,8 +21,9 @@ var in (elem, subscriptable):{
         var found $false
         var curr next(it)
         until(():{found || none?(curr)}, ():{
-            found ||= elem == some(curr)
-            curr := next(it)
+            tern(elem == some(curr), {found := $true}, {
+                curr := next(it)
+            })
         })
         found
     }

@@ -2,6 +2,7 @@
 
 #include <std/fn/Pair.mlp>
 #include <std/fn/Optional.mlp>
+#include <std/fn/curry.mlp>
 #include <std/fn/tern.mlp>
 
 var Pair? (left, right):{
@@ -30,19 +31,21 @@ var LazyList {
 -- increasing range from "from" up to "to" included
 var LazyRange<= _
 LazyRange<= := (from, to):{
+    from := Int(from)
+    to := Int(to)
     tern(from > to, END, {
         Pair?(from, LazyRange<=(from + 1, to))
     })
 }
 
 var subscript (subscriptable, nth):{
+    nth == 0 && ERR("nth should differ from zero (less or greater)")
     var - (lhs, rhs):{
         lhs + rhs + -2 * rhs
     }
 
-    nth > 0 || ERR("nth should be greater than zero")
-
     var Stream::subscript (stream, nth):{
+        nth > 0 || ERR("nth should be greater than zero")
         var subscript_rec _
         subscript_rec := (stream, nth):{
             tern(nth == 1, left(some(stream)), {
@@ -59,6 +62,10 @@ var subscript (subscriptable, nth):{
     !tern(is_lambda(subscriptable), subscriptable[#nth], {
         Stream::subscript(subscriptable, nth)
     })
+}
+
+var subscript' {
+    curry(subscript)
 }
 
 package main

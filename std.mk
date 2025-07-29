@@ -9,6 +9,7 @@ MODULES := \
 std/fn/tern \
 std/op/pipe \
 std/fn/delay \
+std/fn/ERR \
 \
 std/fn/curry \
 std/fn/loops \
@@ -23,6 +24,7 @@ std/op/range \
 std/fn/functional \
 std/fn/Iterator \
 \
+std/fn/algorithm \
 std/op/in \
 std/op/cmp \
 std/op/sub \

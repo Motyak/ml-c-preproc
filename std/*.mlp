@@ -1,6 +1,7 @@
 #include <std/fn/tern.mlp>
 #include <std/op/pipe.mlp>
 #include <std/fn/delay.mlp>
+#include <std/fn/ERR.mlp>
 
 #include <std/fn/curry.mlp>
 #include <std/fn/loops.mlp>
@@ -14,6 +15,7 @@
 #include <std/fn/functional.mlp>
 #include <std/fn/Iterator.mlp>
 
+#include <std/fn/algorithm.mlp>
 #include <std/op/in.mlp>
 #include <std/op/cmp.mlp>
 #include <std/op/sub.mlp>
