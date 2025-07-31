@@ -12,6 +12,7 @@
 
 #include <std/fn/Stream.mlp>
 
+#include <std/op/range.mlp>
 #include <std/fn/functional.mlp>
 #include <std/fn/Iterator.mlp>
 

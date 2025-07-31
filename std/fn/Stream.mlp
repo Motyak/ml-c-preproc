@@ -29,13 +29,27 @@ var LazyList {
 }
 
 -- increasing range from "from" up to "to" included
-var LazyRange<= _
-LazyRange<= := (from, to):{
-    from := Int(from)
-    to := Int(to)
-    tern(from > to, END, {
-        Pair?(from, LazyRange<=(from + 1, to))
-    })
+var LazyRange<= (from, to):{
+    "accepts as input Int, Char or Str"
+    var str? (x):{
+        len(Str(x + 0)) > len(Str(x))
+    }
+    var charInputs? {
+        var charInputs? str?(from) && len(from) == 1
+        charInputs? &&= str?(to) && len(to) == 1
+        charInputs?
+    }
+    from := tern(charInputs?, Char, Int)(from)
+    to := tern(charInputs?, Char, Int)(to)
+
+    var LazyRange<= _
+    LazyRange<= := (from, to):{
+        tern(from > to, END, {
+            Pair?(from, LazyRange<=(from + 1, to))
+        })
+    }
+
+    LazyRange<=(from, to)
 }
 
 var subscript (subscriptable, nth):{
@@ -87,3 +101,30 @@ print(subscript(stream, 2))
 
 "once an element has been evaluated once, it's not re-evaluated"
 print(subscript(stream, 2))
+
+"=== testing range operator ==="
+
+var .. LazyRange<=
+
+var |> (input, fn):{
+    fn(input)
+}
+
+var foreach' {
+    var Stream::foreach (fn, stream):{
+        var foreach_rec _
+        foreach_rec := (stream, fn):{
+            tern(none?(stream), END, {
+                fn(left(some(stream)))
+                foreach_rec(right(some(stream)), fn)
+            })
+        }
+        foreach_rec(stream, fn)
+        stream
+    }
+    curry(Stream::foreach)
+}
+
+1000 .. 1030 |> foreach'(print)
+'a .. 'z |> foreach'(print)
+'A .. 'z |> foreach'(print)

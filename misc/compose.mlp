@@ -1,0 +1,21 @@
+#pragma once
+
+#include <std/fn/functional.mlp>
+
+var compose (fn1, fn2, fns...):{
+    var compose (fn1, fn2):{
+        fn1
+        fn2
+        (x):{fn2(fn1(x))}
+    }
+    reduce(compose, fn1, List(fn2, fns...))
+}
+
+package main
+
+var increment (x):{x + 1}
+var double (x):{x * 2}
+var inc_then_double compose(increment, double, double)
+
+inc_then_double(10)
+

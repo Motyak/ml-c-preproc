@@ -31,9 +31,7 @@ var curry (fn):{
     curry_fixed(len(fn), fn)
 }
 
-var stdout {
-    curry_fixed(1, print)
-}
+var stdout print
 
 package main
 

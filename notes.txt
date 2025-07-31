@@ -3,3 +3,8 @@ nested includes PUIS regrouper par "catégories" de modules.
 
 Un diagramme de dépendances serait pas mal (entre headers).
 
+Il faudrait faire en sorte minimiser le nombre de fonctions,
+minimiser le nb de lignes de chaque fonction,
+et minimiser le nombre de headers.
+  -> ne garder que l'essentiel, maximiser la COHÉSION
+     entre fonctions, et FACTORISER le code
