@@ -268,13 +268,27 @@ var LazyList {
 }
 
 -- increasing range from "from" up to "to" included
-var LazyRange<= _
-LazyRange<= := (from, to):{
-    from := Int(from)
-    to := Int(to)
-    tern(from > to, END, {
-        Pair?(from, LazyRange<=(from + 1, to))
-    })
+var LazyRange<= (from, to):{
+    "accepts as input Int, Char or Str"
+    var str? (x):{
+        len(Str(x + 0)) > len(Str(x))
+    }
+    var charInputs? {
+        var charInputs? str?(from) && len(from) == 1
+        charInputs? &&= str?(to) && len(to) == 1
+        charInputs?
+    }
+    from := tern(charInputs?, Char, Int)(from)
+    to := tern(charInputs?, Char, Int)(to)
+
+    var LazyRange<= _
+    LazyRange<= := (from, to):{
+        tern(from > to, END, {
+            Pair?(from, LazyRange<=(from + 1, to))
+        })
+    }
+
+    LazyRange<=(from, to)
 }
 
 var subscript (subscriptable, nth):{
@@ -309,6 +323,12 @@ var subscript' {
 
 "=== mlcpp: END ./std/fn/Stream.mlp (finally back to std/*.mlp) ==============="
 
+"=== mlcpp: BEGIN ./std/op/range.mlp =========================================="
+
+
+
+var .. LazyRange<=
+"=== mlcpp: END ./std/op/range.mlp (finally back to std/*.mlp) ================"
 "=== mlcpp: BEGIN ./std/fn/functional.mlp ====================================="
 
 
@@ -440,16 +460,6 @@ var reduce {
     curry(reduce)
 }
 
-var min (a, b, others...):{
-    var < (lhs, rhs):{
-        not(lhs > rhs || lhs == rhs)
-    }
-    var min (lhs, rhs):{
-        tern(lhs < rhs, lhs, rhs)
-    }
-    reduce(min, a, List(b, others...))
-}
-
 var count {
     var count (pred, subscriptable):{
         var fn (lhs, rhs):{
@@ -458,6 +468,16 @@ var count {
         reduce(fn, 0, subscriptable)
     }
     curry(count)
+}
+
+var min (a, b, others...):{
+    var < (lhs, rhs):{
+        not(lhs > rhs || lhs == rhs)
+    }
+    var min (lhs, rhs):{
+        tern(lhs < rhs, lhs, rhs)
+    }
+    reduce(min, a, List(b, others...))
 }
 
 var min' {
