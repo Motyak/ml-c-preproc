@@ -1,7 +1,5 @@
 
-"=== mlcpp: BEGIN ./std/fn/Pair.mlp ==========================================="
-
-"=== mlcpp: BEGIN ./std/fn/tern.mlp ==========================================="
+"=== mlcpp: BEGIN ./std/cond.mlp =============================================="
 
 var tern (cond, if_true, if_false):{
     var res _
@@ -17,7 +15,44 @@ var !tern (cond, if_false, if_true):{
 var not (bool):{
     tern(bool, $false, $true)
 }
-"=== mlcpp: END ./std/fn/tern.mlp (back to ./std/fn/Pair.mlp) ================="
+"=== mlcpp: END ./std/cond.mlp (finally back to std/Stream.mlp) ==============="
+"=== mlcpp: BEGIN ./std/loops.mlp ============================================="
+
+
+
+var while _
+while := (cond, do):{
+    cond() && {
+        do()
+        while(cond, do)
+    }
+}
+
+var until _
+until := (cond, do):{
+    cond() || {
+        do()
+        until(cond, do)
+    }
+}
+
+var do_while _
+do_while := (do, cond):{
+    do()
+    while(cond, do)
+}
+
+var do_until _
+do_until := (do, cond):{
+    do()
+    until(cond, do)
+}
+"=== mlcpp: END ./std/loops.mlp (finally back to std/Stream.mlp) =============="
+
+"=== mlcpp: BEGIN ./std/Pair.mlp =============================================="
+
+
+
 
 var Pair (left, right):{
     var dispatcher (msg_id):{
@@ -39,8 +74,11 @@ var right (pair):{
     pair(1)
 }
 
-"=== mlcpp: END ./std/fn/Pair.mlp (finally back to std/fn/Stream.mlp) ========="
-"=== mlcpp: BEGIN ./std/fn/Optional.mlp ======================================="
+"=== mlcpp: END ./std/Pair.mlp (finally back to std/Stream.mlp) ==============="
+"=== mlcpp: BEGIN ./std/Optional.mlp =========================================="
+
+
+
 
 
 
@@ -79,46 +117,7 @@ var some (opt):{
     opt(1)()
 }
 
-"=== mlcpp: END ./std/fn/Optional.mlp (finally back to std/fn/Stream.mlp) ====="
-"=== mlcpp: BEGIN ./std/fn/curry.mlp =========================================="
-
-
-
--- useful for variadic functions
-var curry_fixed (fixedParams, fn):{
-    var - (lhs, rhs):{
-        lhs + rhs + -2 * rhs
-    }
-
-    var >= (lhs, rhs):{
-        lhs > rhs || lhs == rhs
-    }
-
-    var remaining {
-        tern(fixedParams > len(fn), fixedParams, {
-            len(fn) - fixedParams
-        })
-    }
-
-    var curried _
-    curried := (args...):{
-        tern($#varargs - len(fn) >= remaining, fn(args...), {
-            (args2...):{curried(args..., args2...)}
-        })
-    }
-    curried
-}
-
-var curry (fn):{
-    curry_fixed(len(fn), fn)
-}
-
-var stdout {
-    curry_fixed(1, print)
-}
-
-"=== mlcpp: END ./std/fn/curry.mlp (finally back to std/fn/Stream.mlp) ========"
-
+"=== mlcpp: END ./std/Optional.mlp (finally back to std/Stream.mlp) ==========="
 
 var Pair? (left, right):{
     Optional($true, Pair(left, right))
@@ -184,17 +183,16 @@ var subscript (subscriptable, nth):{
         subscript_rec(stream, nth)
     }
 
-    var is_lambda (x):{
-        Str(x) == "<lambda>"
+    var lambda? (x):{
+        var < (lhs, rhs):{
+            not(lhs > rhs || lhs == rhs)
+        }
+        Str(x) == "<lambda>" && len(x) < 8
     }
 
-    !tern(is_lambda(subscriptable), subscriptable[#nth], {
+    !tern(lambda?(subscriptable), subscriptable[#nth], {
         Stream::subscript(subscriptable, nth)
     })
-}
-
-var subscript' {
-    curry(subscript)
 }
 
 "package main"
@@ -226,6 +224,34 @@ var |> (input, fn):{
 }
 
 var foreach' {
+    var curry_fixed (fixedParams, fn):{
+        var - (lhs, rhs):{
+            lhs + rhs + -2 * rhs
+        }
+
+        var >= (lhs, rhs):{
+            lhs > rhs || lhs == rhs
+        }
+
+        var remaining {
+            tern(fixedParams > len(fn), fixedParams, {
+                len(fn) - fixedParams
+            })
+        }
+
+        var curried _
+        curried := (args...):{
+            tern($#varargs - len(fn) >= remaining, fn(args...), {
+                (args2...):{curried(args..., args2...)}
+            })
+        }
+        curried
+    }
+
+    var curry (fn):{
+        curry_fixed(len(fn), fn)
+    }
+
     var Stream::foreach (fn, stream):{
         var foreach_rec _
         foreach_rec := (stream, fn):{

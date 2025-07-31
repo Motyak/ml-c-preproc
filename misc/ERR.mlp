@@ -1,0 +1,10 @@
+#pragma once
+
+```
+    will get deleted and replaced..
+    ..once we impl die() builtin
+```
+var ERR (msg):{
+    print("ERR: " + msg)
+    exit(1)
+}

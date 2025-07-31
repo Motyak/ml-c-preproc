@@ -6,18 +6,30 @@ MAKEFLAGS += -j16
 ###########################################################
 
 MODULES := \
-std/cond \
-std/loops \
+std/fn/tern \
+std/op/pipe \
+std/fn/delay \
+std/fn/ERR \
 \
-std/Pair \
-std/Optional \
-std/Stream \
+std/fn/curry \
+std/fn/loops \
+std/fn/ascii \
+std/fn/ByteStr \
+std/fn/Pair \
+std/fn/Optional \
 \
-std/Iterator \
-std/functional \
-std/op \
+std/fn/Stream \
 \
-std \
+std/op/range \
+std/fn/functional \
+std/fn/Iterator \
+\
+std/fn/algorithm \
+std/op/in \
+std/op/cmp \
+std/op/sub \
+\
+std/* \
 
 MODULES_OBJS := $(MODULES:%=%.ml)
 
@@ -28,7 +40,7 @@ all: main
 main: $(MODULES_OBJS)
 
 clean:
-	$(RM) std/*.ml std.ml
+	$(RM) {std,std/op,std/fn}/*.ml
 
 .PHONY: all main clean
 

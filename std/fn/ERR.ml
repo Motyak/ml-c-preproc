@@ -1,5 +1,0 @@
-
-var ERR (msg):{
-    print("ERR: " + msg)
-    exit(1)
-}

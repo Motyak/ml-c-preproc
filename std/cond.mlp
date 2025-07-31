@@ -14,3 +14,4 @@ var !tern (cond, if_false, if_true):{
 var not (bool):{
     tern(bool, $false, $true)
 }
+

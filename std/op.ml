@@ -1,11 +1,5 @@
 
-"=== mlcpp: BEGIN ./std/fn/Iterator.mlp ======================================="
-
-"=== mlcpp: BEGIN ./std/fn/Stream.mlp ========================================="
-
-"=== mlcpp: BEGIN ./std/fn/Pair.mlp ==========================================="
-
-"=== mlcpp: BEGIN ./std/fn/tern.mlp ==========================================="
+"=== mlcpp: BEGIN ./std/cond.mlp =============================================="
 
 var tern (cond, if_true, if_false):{
     var res _
@@ -21,7 +15,44 @@ var !tern (cond, if_false, if_true):{
 var not (bool):{
     tern(bool, $false, $true)
 }
-"=== mlcpp: END ./std/fn/tern.mlp (back to ./std/fn/Pair.mlp) ================="
+"=== mlcpp: END ./std/cond.mlp (finally back to std/op.mlp) ==================="
+"=== mlcpp: BEGIN ./std/loops.mlp ============================================="
+
+
+
+var while _
+while := (cond, do):{
+    cond() && {
+        do()
+        while(cond, do)
+    }
+}
+
+var until _
+until := (cond, do):{
+    cond() || {
+        do()
+        until(cond, do)
+    }
+}
+
+var do_while _
+do_while := (do, cond):{
+    do()
+    while(cond, do)
+}
+
+var do_until _
+do_until := (do, cond):{
+    do()
+    until(cond, do)
+}
+"=== mlcpp: END ./std/loops.mlp (finally back to std/op.mlp) =================="
+
+"=== mlcpp: BEGIN ./std/Pair.mlp =============================================="
+
+
+
 
 var Pair (left, right):{
     var dispatcher (msg_id):{
@@ -43,8 +74,11 @@ var right (pair):{
     pair(1)
 }
 
-"=== mlcpp: END ./std/fn/Pair.mlp (back to ./std/fn/Stream.mlp) ==============="
-"=== mlcpp: BEGIN ./std/fn/Optional.mlp ======================================="
+"=== mlcpp: END ./std/Pair.mlp (finally back to std/op.mlp) ==================="
+"=== mlcpp: BEGIN ./std/Optional.mlp =========================================="
+
+
+
 
 
 
@@ -83,45 +117,13 @@ var some (opt):{
     opt(1)()
 }
 
-"=== mlcpp: END ./std/fn/Optional.mlp (back to ./std/fn/Stream.mlp) ==========="
-"=== mlcpp: BEGIN ./std/fn/curry.mlp =========================================="
+"=== mlcpp: END ./std/Optional.mlp (finally back to std/op.mlp) ==============="
+"=== mlcpp: BEGIN ./std/Stream.mlp ============================================"
 
 
 
--- useful for variadic functions
-var curry_fixed (fixedParams, fn):{
-    var - (lhs, rhs):{
-        lhs + rhs + -2 * rhs
-    }
 
-    var >= (lhs, rhs):{
-        lhs > rhs || lhs == rhs
-    }
 
-    var remaining {
-        tern(fixedParams > len(fn), fixedParams, {
-            len(fn) - fixedParams
-        })
-    }
-
-    var curried _
-    curried := (args...):{
-        tern($#varargs - len(fn) >= remaining, fn(args...), {
-            (args2...):{curried(args..., args2...)}
-        })
-    }
-    curried
-}
-
-var curry (fn):{
-    curry_fixed(len(fn), fn)
-}
-
-var stdout {
-    curry_fixed(1, print)
-}
-
-"=== mlcpp: END ./std/fn/curry.mlp (back to ./std/fn/Stream.mlp) =============="
 
 
 var Pair? (left, right):{
@@ -148,13 +150,27 @@ var LazyList {
 }
 
 -- increasing range from "from" up to "to" included
-var LazyRange<= _
-LazyRange<= := (from, to):{
-    from := Int(from)
-    to := Int(to)
-    tern(from > to, END, {
-        Pair?(from, LazyRange<=(from + 1, to))
-    })
+var LazyRange<= (from, to):{
+    "accepts as input Int, Char or Str"
+    var str? (x):{
+        len(Str(x + 0)) > len(Str(x))
+    }
+    var charInputs? {
+        var charInputs? str?(from) && len(from) == 1
+        charInputs? &&= str?(to) && len(to) == 1
+        charInputs?
+    }
+    from := tern(charInputs?, Char, Int)(from)
+    to := tern(charInputs?, Char, Int)(to)
+
+    var LazyRange<= _
+    LazyRange<= := (from, to):{
+        tern(from > to, END, {
+            Pair?(from, LazyRange<=(from + 1, to))
+        })
+    }
+
+    LazyRange<=(from, to)
 }
 
 var subscript (subscriptable, nth):{
@@ -174,40 +190,31 @@ var subscript (subscriptable, nth):{
         subscript_rec(stream, nth)
     }
 
-    var is_lambda (x):{
-        Str(x) == "<lambda>"
+    var lambda? (x):{
+        var < (lhs, rhs):{
+            not(lhs > rhs || lhs == rhs)
+        }
+        Str(x) == "<lambda>" && len(x) < 8
     }
 
-    !tern(is_lambda(subscriptable), subscriptable[#nth], {
+    !tern(lambda?(subscriptable), subscriptable[#nth], {
         Stream::subscript(subscriptable, nth)
     })
 }
 
-var subscript' {
-    curry(subscript)
-}
+"=== mlcpp: END ./std/Stream.mlp (finally back to std/op.mlp) ================="
 
-"=== mlcpp: END ./std/fn/Stream.mlp (back to ./std/fn/Iterator.mlp) ==========="
-
-
-
-
+"=== mlcpp: BEGIN ./std/Iterator.mlp =========================================="
 var Iterator (subscriptable):{
-    var Elem? (val):{
-        Optional($true, val)
-    }
-
     var Iterator (container):{
         var nth 1
-
         var next (peek?):{
             tern(nth > len(container), END, {
                 var res container[#nth]
                 peek? || {nth += 1}
-                Elem?(res)
+                Optional($true, res)
             })
         }
-
         next
     }
 
@@ -218,40 +225,26 @@ var Iterator (subscriptable):{
                 peek? || {
                     stream := right(some(stream))
                 }
-                Elem?(res)
+                Optional($true, res)
             })
         }
-
         next
     }
 
-    var is_lambda (x):{
-        Str(x) == "<lambda>"
+    var lambda? (x):{
+        var < (lhs, rhs):{
+            not(lhs > rhs || lhs == rhs)
+        }
+        Str(x) == "<lambda>" && len(x) < 8
     }
 
-    !tern(is_lambda(subscriptable), Iterator(subscriptable), {
+    !tern(lambda?(subscriptable), Iterator(subscriptable), {
         Iterator::fromStream(subscriptable)
     })
 }
 
 var ArgIterator (args...):{
-    var args LazyList(args...)
-
-    var Arg? (arg):{
-        Optional($true, arg)
-    }
-
-    var next (peek?):{
-        tern(none?(args), END, {
-            var res left(some(args))
-            peek? || {
-                args := right(some(args))
-            }
-            Arg?(res)
-        })
-    }
-
-    next
+    Iterator(LazyList(args...))
 }
 
 var next (iterator):{
@@ -261,41 +254,13 @@ var peek (iterator):{
     iterator(1)
 }
 
-"=== mlcpp: END ./std/fn/Iterator.mlp (finally back to std/op/cmp.mlp) ========"
+"=== mlcpp: END ./std/Iterator.mlp (finally back to std/op.mlp) ==============="
 
-"=== mlcpp: BEGIN ./std/fn/loops.mlp =========================================="
+var .. LazyRange<=
 
-
-
-var while _
-while := (cond, do):{
-    cond() && {
-        do()
-        while(cond, do)
-    }
+var |> (input, fn):{
+    fn(input)
 }
-
-var until _
-until := (cond, do):{
-    cond() || {
-        do()
-        until(cond, do)
-    }
-}
-
-var do_while _
-do_while := (do, cond):{
-    do()
-    while(cond, do)
-}
-
-var do_until _
-do_until := (do, cond):{
-    do()
-    until(cond, do)
-}
-"=== mlcpp: END ./std/fn/loops.mlp (finally back to std/op/cmp.mlp) ==========="
-
 
 var <> (a, b, varargs...):{
     not(==(a, b, varargs...))
@@ -352,8 +317,95 @@ var >= (a, b, varargs...):{
     not(lt)
 }
 
+var - {
+    var neg (x):{
+        x := Int(x)
+        x + -2 * x
+    }
+
+    var sub (a, b, varargs...):{
+        var otherArgs ArgIterator(b, varargs...)
+
+        var lhs a
+        var rhs next(otherArgs)
+        do_until(():{
+            var rhs' some(rhs)
+            lhs := lhs + neg(rhs')
+            rhs := next(otherArgs)
+        }, ():{none?(rhs)})
+
+        lhs
+    }
+
+    var - (x, xs...):{
+        tern($#varargs == 0, neg(x), {
+            sub(x, xs...)
+        })
+    }
+
+    -
+}
+
+var in (elem, subscriptable):{
+    var in (elem, container):{
+        var i 1
+        var found $false
+        until(():{found || i > len(container)}, ():{
+            found ||= container[#i] == elem
+            i += 1
+        })
+        found
+    }
+
+    var Stream::in (elem, stream):{
+        var it Iterator(stream)
+        var found $false
+        var curr next(it)
+        until(():{found || none?(curr)}, ():{
+            tern(elem == some(curr), {found := $true}, {
+                curr := next(it)
+            })
+        })
+        found
+    }
+
+    var lambda? (x):{
+        Str(x) == "<lambda>" && len(x) < 8
+    }
+
+    !tern(lambda?(subscriptable), in(elem, subscriptable), {
+        Stream::in(elem, subscriptable)
+    })
+}
+
+var !in (elem, subscriptable):{
+    not(in(elem, subscriptable))
+}
+
 "package main"
+
+"=== testing sub ==="
+
+-(3)
+-(3, 5)
+3 - 5
+-(1, 2, 3)
+1 - 2 - 3
+
+
+"=== testing <() ==="
 
 <(1, 2, 3)
 <(1, 2, 2)
 <(1, 2, 1)
+
+"=== testing in op ==="
+
+"d" in "sdf"
+"g" in "sdf"
+
+7 in 1 .. 10
+11 in 1 .. 10
+
+'f in 'a .. 'z
+'F in 'a .. 'z

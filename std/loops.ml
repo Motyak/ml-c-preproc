@@ -1,5 +1,5 @@
 
-"=== mlcpp: BEGIN ./std/fn/tern.mlp ==========================================="
+"=== mlcpp: BEGIN ./std/cond.mlp =============================================="
 
 var tern (cond, if_true, if_false):{
     var res _
@@ -15,7 +15,7 @@ var !tern (cond, if_false, if_true):{
 var not (bool):{
     tern(bool, $false, $true)
 }
-"=== mlcpp: END ./std/fn/tern.mlp (finally back to std/fn/loops.mlp) =========="
+"=== mlcpp: END ./std/cond.mlp (finally back to std/loops.mlp) ================"
 
 var while _
 while := (cond, do):{

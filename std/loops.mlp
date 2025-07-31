@@ -1,6 +1,6 @@
 #pragma once
 
-#include <std/fn/tern.mlp>
+#include <std/cond.mlp>
 
 var while _
 while := (cond, do):{

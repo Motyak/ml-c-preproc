@@ -3,21 +3,7 @@
 #include <std/fn/Iterator.mlp>
 #include <std/fn/Optional.mlp>
 #include <std/fn/loops.mlp>
-
-var any {
-    var any (pred, subscriptable):{
-        var it Iterator(subscriptable)
-        var any $false
-        var curr next(it)
-        until(():{any || none?(curr)}, ():{
-            tern(pred(some(curr)), {any := $true}, {
-                curr := next(it)
-            })
-        })
-        any
-    }
-    curry(any)
-}
+#include <std/fn/tern.mlp>
 
 var all {
     var all (pred, subscriptable):{
@@ -60,12 +46,6 @@ var id (x):{
     x
 }
 
-"=== testing any ==="
-[1, 3] |> any(is_even) |> stdout
--- short circuit
-LazyList(1, 2, id(3)) |> any(is_even) |> stdout
-
-"=== testing all ==="
 [2, 4, 6] |> all(is_even) |> stdout
 -- short circuit
 LazyList(2, 5, id(6)) |> all(is_even) |> stdout

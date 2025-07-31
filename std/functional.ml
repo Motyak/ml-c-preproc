@@ -1,9 +1,5 @@
 
-"=== mlcpp: BEGIN ./std/fn/Stream.mlp ========================================="
-
-"=== mlcpp: BEGIN ./std/fn/Pair.mlp ==========================================="
-
-"=== mlcpp: BEGIN ./std/fn/tern.mlp ==========================================="
+"=== mlcpp: BEGIN ./std/cond.mlp =============================================="
 
 var tern (cond, if_true, if_false):{
     var res _
@@ -19,7 +15,44 @@ var !tern (cond, if_false, if_true):{
 var not (bool):{
     tern(bool, $false, $true)
 }
-"=== mlcpp: END ./std/fn/tern.mlp (back to ./std/fn/Pair.mlp) ================="
+"=== mlcpp: END ./std/cond.mlp (finally back to std/functional.mlp) ==========="
+"=== mlcpp: BEGIN ./std/loops.mlp ============================================="
+
+
+
+var while _
+while := (cond, do):{
+    cond() && {
+        do()
+        while(cond, do)
+    }
+}
+
+var until _
+until := (cond, do):{
+    cond() || {
+        do()
+        until(cond, do)
+    }
+}
+
+var do_while _
+do_while := (do, cond):{
+    do()
+    while(cond, do)
+}
+
+var do_until _
+do_until := (do, cond):{
+    do()
+    until(cond, do)
+}
+"=== mlcpp: END ./std/loops.mlp (finally back to std/functional.mlp) =========="
+
+"=== mlcpp: BEGIN ./std/Pair.mlp =============================================="
+
+
+
 
 var Pair (left, right):{
     var dispatcher (msg_id):{
@@ -41,8 +74,11 @@ var right (pair):{
     pair(1)
 }
 
-"=== mlcpp: END ./std/fn/Pair.mlp (back to ./std/fn/Stream.mlp) ==============="
-"=== mlcpp: BEGIN ./std/fn/Optional.mlp ======================================="
+"=== mlcpp: END ./std/Pair.mlp (finally back to std/functional.mlp) ==========="
+"=== mlcpp: BEGIN ./std/Optional.mlp =========================================="
+
+
+
 
 
 
@@ -81,45 +117,13 @@ var some (opt):{
     opt(1)()
 }
 
-"=== mlcpp: END ./std/fn/Optional.mlp (back to ./std/fn/Stream.mlp) ==========="
-"=== mlcpp: BEGIN ./std/fn/curry.mlp =========================================="
+"=== mlcpp: END ./std/Optional.mlp (finally back to std/functional.mlp) ======="
+"=== mlcpp: BEGIN ./std/Stream.mlp ============================================"
 
 
 
--- useful for variadic functions
-var curry_fixed (fixedParams, fn):{
-    var - (lhs, rhs):{
-        lhs + rhs + -2 * rhs
-    }
 
-    var >= (lhs, rhs):{
-        lhs > rhs || lhs == rhs
-    }
 
-    var remaining {
-        tern(fixedParams > len(fn), fixedParams, {
-            len(fn) - fixedParams
-        })
-    }
-
-    var curried _
-    curried := (args...):{
-        tern($#varargs - len(fn) >= remaining, fn(args...), {
-            (args2...):{curried(args..., args2...)}
-        })
-    }
-    curried
-}
-
-var curry (fn):{
-    curry_fixed(len(fn), fn)
-}
-
-var stdout {
-    curry_fixed(1, print)
-}
-
-"=== mlcpp: END ./std/fn/curry.mlp (back to ./std/fn/Stream.mlp) =============="
 
 
 var Pair? (left, right):{
@@ -186,61 +190,233 @@ var subscript (subscriptable, nth):{
         subscript_rec(stream, nth)
     }
 
-    var is_lambda (x):{
-        Str(x) == "<lambda>"
+    var lambda? (x):{
+        var < (lhs, rhs):{
+            not(lhs > rhs || lhs == rhs)
+        }
+        Str(x) == "<lambda>" && len(x) < 8
     }
 
-    !tern(is_lambda(subscriptable), subscriptable[#nth], {
+    !tern(lambda?(subscriptable), subscriptable[#nth], {
         Stream::subscript(subscriptable, nth)
     })
 }
 
+"=== mlcpp: END ./std/Stream.mlp (finally back to std/functional.mlp) ========="
+
+"=== mlcpp: BEGIN ./std/Iterator.mlp =========================================="
+var Iterator (subscriptable):{
+    var Iterator (container):{
+        var nth 1
+        var next (peek?):{
+            tern(nth > len(container), END, {
+                var res container[#nth]
+                peek? || {nth += 1}
+                Optional($true, res)
+            })
+        }
+        next
+    }
+
+    var Iterator::fromStream (stream):{
+        var next (peek?):{
+            tern(none?(stream), END, {
+                var res left(some(stream))
+                peek? || {
+                    stream := right(some(stream))
+                }
+                Optional($true, res)
+            })
+        }
+        next
+    }
+
+    var lambda? (x):{
+        var < (lhs, rhs):{
+            not(lhs > rhs || lhs == rhs)
+        }
+        Str(x) == "<lambda>" && len(x) < 8
+    }
+
+    !tern(lambda?(subscriptable), Iterator(subscriptable), {
+        Iterator::fromStream(subscriptable)
+    })
+}
+
+var ArgIterator (args...):{
+    Iterator(LazyList(args...))
+}
+
+var next (iterator):{
+    iterator(0)
+}
+var peek (iterator):{
+    iterator(1)
+}
+
+"=== mlcpp: END ./std/Iterator.mlp (finally back to std/functional.mlp) ======="
+"=== mlcpp: BEGIN ./std/op.mlp ================================================"
+var .. LazyRange<=
+
+var |> (input, fn):{
+    fn(input)
+}
+
+var <> (a, b, varargs...):{
+    not(==(a, b, varargs...))
+}
+
+var < (a, b, varargs...):{
+    var otherArgs ArgIterator(b, varargs...)
+
+    var ge $false
+    var lhs a
+    var rhs next(otherArgs)
+    do_until(():{
+        var rhs' some(rhs)
+        tern(lhs > rhs' || lhs == rhs', {ge := $true}, {
+            lhs := rhs'
+            rhs := next(otherArgs)
+        })
+    }, ():{ge || none?(rhs)})
+
+    not(ge)
+}
+
+var <= (a, b, varargs...):{
+    var otherArgs ArgIterator(b, varargs...)
+
+    var gt $false
+    var lhs a
+    var rhs next(otherArgs)
+    do_until(():{
+        var rhs' some(rhs)
+        !tern(lhs > rhs' || lhs == rhs', {gt := $true}, {
+            lhs := rhs'
+            rhs := next(otherArgs)
+        })
+    }, ():{gt || none?(rhs)})
+
+    not(gt)
+}
+
+var >= (a, b, varargs...):{
+    var otherArgs ArgIterator(b, varargs...)
+
+    var lt $false
+    var lhs a
+    var rhs next(otherArgs)
+    do_until(():{
+        var rhs' some(rhs)
+        !tern(lhs > rhs' || lhs == rhs', {lt := $true}, {
+            lhs := rhs'
+            rhs := next(otherArgs)
+        })
+    }, ():{lt || none?(rhs)})
+
+    not(lt)
+}
+
+var - {
+    var neg (x):{
+        x := Int(x)
+        x + -2 * x
+    }
+
+    var sub (a, b, varargs...):{
+        var otherArgs ArgIterator(b, varargs...)
+
+        var lhs a
+        var rhs next(otherArgs)
+        do_until(():{
+            var rhs' some(rhs)
+            lhs := lhs + neg(rhs')
+            rhs := next(otherArgs)
+        }, ():{none?(rhs)})
+
+        lhs
+    }
+
+    var - (x, xs...):{
+        tern($#varargs == 0, neg(x), {
+            sub(x, xs...)
+        })
+    }
+
+    -
+}
+
+var in (elem, subscriptable):{
+    var in (elem, container):{
+        var i 1
+        var found $false
+        until(():{found || i > len(container)}, ():{
+            found ||= container[#i] == elem
+            i += 1
+        })
+        found
+    }
+
+    var Stream::in (elem, stream):{
+        var it Iterator(stream)
+        var found $false
+        var curr next(it)
+        until(():{found || none?(curr)}, ():{
+            tern(elem == some(curr), {found := $true}, {
+                curr := next(it)
+            })
+        })
+        found
+    }
+
+    var lambda? (x):{
+        Str(x) == "<lambda>" && len(x) < 8
+    }
+
+    !tern(lambda?(subscriptable), in(elem, subscriptable), {
+        Stream::in(elem, subscriptable)
+    })
+}
+
+var !in (elem, subscriptable):{
+    not(in(elem, subscriptable))
+}
+
+"=== mlcpp: END ./std/op.mlp (finally back to std/functional.mlp) ============="
+
+```
+    basically, make a function "pipe-able"..
+    ..(with parentheses)
+
+    e.g.: `x |> print()` normally doesn't work
+    same for `str |> map(upper)`
+    unless they are augmented by curry.
+```
+var curry_fixed (fixedParams, fn):{
+    var remaining {
+        tern(fixedParams > len(fn), fixedParams, {
+            len(fn) - fixedParams
+        })
+    }
+
+    var curried _
+    curried := (args...):{
+        tern($#varargs - len(fn) >= remaining, fn(args...), {
+            (args2...):{curried(args..., args2...)}
+        })
+    }
+    curried
+}
+
+var curry (fn):{
+    curry_fixed(len(fn), fn)
+}
+
+var stdout print
+
 var subscript' {
     curry(subscript)
 }
-
-"=== mlcpp: END ./std/fn/Stream.mlp (finally back to std/fn/functional.mlp) ==="
-"=== mlcpp: BEGIN ./std/fn/loops.mlp =========================================="
-
-
-
-var while _
-while := (cond, do):{
-    cond() && {
-        do()
-        while(cond, do)
-    }
-}
-
-var until _
-until := (cond, do):{
-    cond() || {
-        do()
-        until(cond, do)
-    }
-}
-
-var do_while _
-do_while := (do, cond):{
-    do()
-    while(cond, do)
-}
-
-var do_until _
-do_until := (do, cond):{
-    do()
-    until(cond, do)
-}
-"=== mlcpp: END ./std/fn/loops.mlp (finally back to std/fn/functional.mlp) ===="
-
-"=== mlcpp: BEGIN ./std/fn/delay.mlp =========================================="
-
-var delay (x):{
-    var delayed ():{x}
-    delayed
-}
-
-"=== mlcpp: END ./std/fn/delay.mlp (finally back to std/fn/functional.mlp) ===="
 
 var foreach (OUT subscriptable, fn):{
     var foreach (OUT container, fn):{
@@ -266,12 +442,12 @@ var foreach (OUT subscriptable, fn):{
         stream
     }
 
-    var is_lambda (x):{
-        Str(x) == "<lambda>"
+    var lambda? (x):{
+        Str(x) == "<lambda>" && len(x) < 8
     }
 
-    !tern(is_lambda(subscriptable), foreach(&subscriptable, fn), {
-        Stream::foreach(&subscriptable, fn)
+    !tern(lambda?(subscriptable), foreach(&subscriptable, fn), {
+        Stream::foreach(subscriptable, fn)
     })
 }
 
@@ -279,11 +455,15 @@ var foreach' {
     var foreach' (fn, container):{
         foreach(container, fn)
     }
-
     curry(foreach')
 }
 
 var map {
+    var delay (x):{
+        var delayed ():{x}
+        delayed
+    }
+
     var map (fn, subscriptable):{
         var map (fn, container):{
             var res container
@@ -302,11 +482,11 @@ var map {
             })
         }
 
-        var is_lambda (x):{
-            Str(x) == "<lambda>"
+        var lambda? (x):{
+            Str(x) == "<lambda>" && len(x) < 8
         }
 
-        !tern(is_lambda(subscriptable), map(fn, subscriptable), {
+        !tern(lambda?(subscriptable), map(fn, subscriptable), {
             Stream::map(fn, subscriptable)
         })
     }
@@ -316,6 +496,11 @@ var map {
 }
 
 var filter {
+    var delay (x):{
+        var delayed ():{x}
+        delayed
+    }
+
     var filter (pred, subscriptable):{
         var filter (pred, container):{
             var is_list (x):{
@@ -344,11 +529,11 @@ var filter {
             })
         }
 
-        var is_lambda (x):{
-            Str(x) == "<lambda>"
+        var lambda? (x):{
+            Str(x) == "<lambda>" && len(x) < 8
         }
 
-        !tern(is_lambda(subscriptable), filter(pred, subscriptable), {
+        !tern(lambda?(subscriptable), filter(pred, subscriptable), {
             Stream::filter(pred, subscriptable)
         })
     }
@@ -396,94 +581,6 @@ var join {
     curry(join)
 }
 
-var count {
-    var count (pred, subscriptable):{
-        var fn (lhs, rhs):{
-            tern(pred(rhs), lhs + 1, lhs)
-        }
-        reduce(fn, 0, subscriptable)
-    }
-    curry(count)
-}
-
-var min (a, b, others...):{
-    var < (lhs, rhs):{
-        not(lhs > rhs || lhs == rhs)
-    }
-    var min (lhs, rhs):{
-        tern(lhs < rhs, lhs, rhs)
-    }
-    reduce(min, a, List(b, others...))
-}
-
-var min' {
-    var min' (subscriptable):{
-        var < (lhs, rhs):{
-            not(lhs > rhs || lhs == rhs)
-        }
-        var min2 (lhs, rhs):{
-            tern(lhs < rhs, lhs, rhs)
-        }
-        var min (container):{
-            tern(len(container) == 0, ERR("empty container"), {
-                tern(len(container) == 1, container[#1], {
-                    reduce(min2, container[#1], container[#2..-1])
-                })
-            })
-        }
-        var Stream::min (stream):{
-            tern(none?(stream), ERR("empty stream"), {
-                reduce(min2, left(some(stream)), right(some(stream)))
-            })
-        }
-
-        var is_lambda (x):{
-            Str(x) == "<lambda>"
-        }
-
-        !tern(is_lambda(subscriptable), min(subscriptable), {
-            Stream::min(subscriptable)
-        })
-    }
-    curry(min')
-}
-
-var max (a, b, others...):{
-    var max (lhs, rhs):{
-        tern(lhs > rhs, lhs, rhs)
-    }
-    reduce(max, a, List(b, others...))
-}
-
-var max' {
-    var max' (subscriptable):{
-        var max2 (lhs, rhs):{
-            tern(lhs > rhs, lhs, rhs)
-        }
-        var max (container):{
-            tern(len(container) == 0, ERR("empty container"), {
-                tern(len(container) == 1, container[#1], {
-                    reduce(max2, container[#1], container[#2..-1])
-                })
-            })
-        }
-        var Stream::max (stream):{
-            tern(none?(stream), ERR("empty stream"), {
-                reduce(max2, left(some(stream)), right(some(stream)))
-            })
-        }
-
-        var is_lambda (x):{
-            Str(x) == "<lambda>"
-        }
-
-        !tern(is_lambda(subscriptable), max(subscriptable), {
-            Stream::max(subscriptable)
-        })
-    }
-    curry(max')
-}
-
 "package main"
 
 "=== testing foreach ==="
@@ -491,10 +588,6 @@ var max' {
 var id (x):{
     print("evaluated: " + x)
     x
-}
-
-var |> (input, fn):{
-    fn(input)
 }
 
 {
@@ -526,10 +619,6 @@ var |> (input, fn):{
     }
 
     var upper (OUT c):{
-        var - (lhs, rhs):{
-            lhs + rhs + -2 * rhs
-        }
-
         c := Char(c) - (ascii('a) - ascii('A))
     }
 
@@ -545,19 +634,15 @@ var ERR (msg):{
     exit(1)
 }
 
-var <= (lhs, rhs):{
-    not(lhs > rhs)
-}
-
-var - (lhs, rhs):{
-    lhs + rhs + -2 * rhs
-}
-
 var ascii (c):{
     Int(Char(c))
 }
 
 var sumOfDigits (n):{
+    var <= (a, b):{
+        not(a > b)
+    }
+
     n := Str(n)
     var res 0
     foreach(n, (c):{
@@ -569,18 +654,10 @@ var sumOfDigits (n):{
 
 -- mod 10 not equal zero
 var %10<>0 (n):{
-    var <> (lhs, rhs):{
-        not(lhs == rhs)
-    }
-
     Str(n)[#-1] <> '0
 }
 
 var predicate (n):{
-    var < (lhs, rhs):{
-        not(lhs > rhs || lhs == rhs)
-    }
-
     %10<>0(n) && sumOfDigits(n) < 10
 }
 
@@ -598,8 +675,6 @@ seq := seq |> map(fn)
 -- foreach(seq, print)
 
 "=== testing map/filter ==="
-
-var .. LazyRange<=
 
 {
     var seq [1, 2, 3, 4, 5]
@@ -633,23 +708,11 @@ var range2str (range):{
 }
 ['0 .. '9, 'a .. 'z] |> map(range2str) |> reduce(+, "") |> stdout
 
-"=== testing min ==="
-
-min(1, 2, 3, 4, 5, 6) |> stdout
-[1, 2, 3, 4, 5, 6] |> min' |> stdout
-1 .. 10 |> min' |> stdout
-
 "=== testing split/join ==="
 
 var upper (OUT c):{
     var ascii (c):{
         Int(Char(c))
-    }
-    var <= (lhs, rhs):{
-        not(lhs > rhs)
-    }
-    var - (lhs, rhs):{
-        lhs + rhs + -2 * rhs
     }
     tern(ascii(c) <= ascii('Z), c, {
         var local_c Char(c)
@@ -666,27 +729,3 @@ var upper (OUT c):{
 "abc fds 123" |> split(" ") |> stdout
 
 "f,d,s" |> split(",") |> map(upper) |> join("_") |> stdout
-
-"=== testing min ==="
-
-max(1, 2, 3, 4, 5, 6) |> stdout
-[1, 2, 3, 4, 5, 6] |> max' |> stdout
-1 .. 10 |> max' |> stdout
-
-"=== testing count ==="
-
-var is_even (n):{
-    var in (elem, container):{
-        var i 1
-        var found $false
-        until(():{found || i > len(container)}, ():{
-            found ||= container[#i] == elem
-            i += 1
-        })
-        found
-    }
-    Str(Int(n))[#-1] in "02468"
-}
-
-[1, 2, 3, 4, 5, 6] |> count(is_even) |> stdout
-1 .. 10 |> count(is_even) |> stdout

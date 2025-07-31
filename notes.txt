@@ -8,3 +8,7 @@ minimiser le nb de lignes de chaque fonction,
 et minimiser le nombre de headers.
   -> ne garder que l'essentiel, maximiser la COHÉSION
      entre fonctions, et FACTORISER le code
+
+---
+
+

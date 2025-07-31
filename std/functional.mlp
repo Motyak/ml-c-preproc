@@ -1,9 +1,48 @@
 #pragma once
 
-#include <std/fn/Stream.mlp>
-#include <std/fn/loops.mlp>
-#include <std/fn/curry.mlp>
-#include <std/fn/delay.mlp>
+#include <std/cond.mlp>
+#include <std/loops.mlp>
+
+#include <std/Pair.mlp>
+#include <std/Optional.mlp>
+#include <std/Stream.mlp>
+
+#include <std/Iterator.mlp>
+#include <std/op.mlp>
+
+```
+    basically, make a function "pipe-able"..
+    ..(with parentheses)
+
+    e.g.: `x |> print()` normally doesn't work
+    same for `str |> map(upper)`
+    unless they are augmented by curry.
+```
+var curry_fixed (fixedParams, fn):{
+    var remaining {
+        tern(fixedParams > len(fn), fixedParams, {
+            len(fn) - fixedParams
+        })
+    }
+
+    var curried _
+    curried := (args...):{
+        tern($#varargs - len(fn) >= remaining, fn(args...), {
+            (args2...):{curried(args..., args2...)}
+        })
+    }
+    curried
+}
+
+var curry (fn):{
+    curry_fixed(len(fn), fn)
+}
+
+var stdout print
+
+var subscript' {
+    curry(subscript)
+}
 
 var foreach (OUT subscriptable, fn):{
     var foreach (OUT container, fn):{
@@ -29,12 +68,12 @@ var foreach (OUT subscriptable, fn):{
         stream
     }
 
-    var is_lambda (x):{
-        Str(x) == "<lambda>"
+    var lambda? (x):{
+        Str(x) == "<lambda>" && len(x) < 8
     }
 
-    !tern(is_lambda(subscriptable), foreach(&subscriptable, fn), {
-        Stream::foreach(&subscriptable, fn)
+    !tern(lambda?(subscriptable), foreach(&subscriptable, fn), {
+        Stream::foreach(subscriptable, fn)
     })
 }
 
@@ -42,11 +81,15 @@ var foreach' {
     var foreach' (fn, container):{
         foreach(container, fn)
     }
-
     curry(foreach')
 }
 
 var map {
+    var delay (x):{
+        var delayed ():{x}
+        delayed
+    }
+
     var map (fn, subscriptable):{
         var map (fn, container):{
             var res container
@@ -65,11 +108,11 @@ var map {
             })
         }
 
-        var is_lambda (x):{
-            Str(x) == "<lambda>"
+        var lambda? (x):{
+            Str(x) == "<lambda>" && len(x) < 8
         }
 
-        !tern(is_lambda(subscriptable), map(fn, subscriptable), {
+        !tern(lambda?(subscriptable), map(fn, subscriptable), {
             Stream::map(fn, subscriptable)
         })
     }
@@ -79,6 +122,11 @@ var map {
 }
 
 var filter {
+    var delay (x):{
+        var delayed ():{x}
+        delayed
+    }
+
     var filter (pred, subscriptable):{
         var filter (pred, container):{
             var is_list (x):{
@@ -107,11 +155,11 @@ var filter {
             })
         }
 
-        var is_lambda (x):{
-            Str(x) == "<lambda>"
+        var lambda? (x):{
+            Str(x) == "<lambda>" && len(x) < 8
         }
 
-        !tern(is_lambda(subscriptable), filter(pred, subscriptable), {
+        !tern(lambda?(subscriptable), filter(pred, subscriptable), {
             Stream::filter(pred, subscriptable)
         })
     }
@@ -159,94 +207,6 @@ var join {
     curry(join)
 }
 
-var count {
-    var count (pred, subscriptable):{
-        var fn (lhs, rhs):{
-            tern(pred(rhs), lhs + 1, lhs)
-        }
-        reduce(fn, 0, subscriptable)
-    }
-    curry(count)
-}
-
-var min (a, b, others...):{
-    var < (lhs, rhs):{
-        not(lhs > rhs || lhs == rhs)
-    }
-    var min (lhs, rhs):{
-        tern(lhs < rhs, lhs, rhs)
-    }
-    reduce(min, a, List(b, others...))
-}
-
-var min' {
-    var min' (subscriptable):{
-        var < (lhs, rhs):{
-            not(lhs > rhs || lhs == rhs)
-        }
-        var min2 (lhs, rhs):{
-            tern(lhs < rhs, lhs, rhs)
-        }
-        var min (container):{
-            tern(len(container) == 0, ERR("empty container"), {
-                tern(len(container) == 1, container[#1], {
-                    reduce(min2, container[#1], container[#2..-1])
-                })
-            })
-        }
-        var Stream::min (stream):{
-            tern(none?(stream), ERR("empty stream"), {
-                reduce(min2, left(some(stream)), right(some(stream)))
-            })
-        }
-
-        var is_lambda (x):{
-            Str(x) == "<lambda>"
-        }
-
-        !tern(is_lambda(subscriptable), min(subscriptable), {
-            Stream::min(subscriptable)
-        })
-    }
-    curry(min')
-}
-
-var max (a, b, others...):{
-    var max (lhs, rhs):{
-        tern(lhs > rhs, lhs, rhs)
-    }
-    reduce(max, a, List(b, others...))
-}
-
-var max' {
-    var max' (subscriptable):{
-        var max2 (lhs, rhs):{
-            tern(lhs > rhs, lhs, rhs)
-        }
-        var max (container):{
-            tern(len(container) == 0, ERR("empty container"), {
-                tern(len(container) == 1, container[#1], {
-                    reduce(max2, container[#1], container[#2..-1])
-                })
-            })
-        }
-        var Stream::max (stream):{
-            tern(none?(stream), ERR("empty stream"), {
-                reduce(max2, left(some(stream)), right(some(stream)))
-            })
-        }
-
-        var is_lambda (x):{
-            Str(x) == "<lambda>"
-        }
-
-        !tern(is_lambda(subscriptable), max(subscriptable), {
-            Stream::max(subscriptable)
-        })
-    }
-    curry(max')
-}
-
 package main
 
 "=== testing foreach ==="
@@ -254,10 +214,6 @@ package main
 var id (x):{
     print("evaluated: " + x)
     x
-}
-
-var |> (input, fn):{
-    fn(input)
 }
 
 {
@@ -289,10 +245,6 @@ var |> (input, fn):{
     }
 
     var upper (OUT c):{
-        var - (lhs, rhs):{
-            lhs + rhs + -2 * rhs
-        }
-
         c := Char(c) - (ascii('a) - ascii('A))
     }
 
@@ -308,19 +260,15 @@ var ERR (msg):{
     exit(1)
 }
 
-var <= (lhs, rhs):{
-    not(lhs > rhs)
-}
-
-var - (lhs, rhs):{
-    lhs + rhs + -2 * rhs
-}
-
 var ascii (c):{
     Int(Char(c))
 }
 
 var sumOfDigits (n):{
+    var <= (a, b):{
+        not(a > b)
+    }
+
     n := Str(n)
     var res 0
     foreach(n, (c):{
@@ -332,18 +280,10 @@ var sumOfDigits (n):{
 
 -- mod 10 not equal zero
 var %10<>0 (n):{
-    var <> (lhs, rhs):{
-        not(lhs == rhs)
-    }
-
     Str(n)[#-1] <> '0
 }
 
 var predicate (n):{
-    var < (lhs, rhs):{
-        not(lhs > rhs || lhs == rhs)
-    }
-
     %10<>0(n) && sumOfDigits(n) < 10
 }
 
@@ -361,8 +301,6 @@ seq := seq |> map(fn)
 -- foreach(seq, print)
 
 "=== testing map/filter ==="
-
-var .. LazyRange<=
 
 {
     var seq [1, 2, 3, 4, 5]
@@ -396,23 +334,11 @@ var range2str (range):{
 }
 ['0 .. '9, 'a .. 'z] |> map(range2str) |> reduce(+, "") |> stdout
 
-"=== testing min ==="
-
-min(1, 2, 3, 4, 5, 6) |> stdout
-[1, 2, 3, 4, 5, 6] |> min' |> stdout
-1 .. 10 |> min' |> stdout
-
 "=== testing split/join ==="
 
 var upper (OUT c):{
     var ascii (c):{
         Int(Char(c))
-    }
-    var <= (lhs, rhs):{
-        not(lhs > rhs)
-    }
-    var - (lhs, rhs):{
-        lhs + rhs + -2 * rhs
     }
     tern(ascii(c) <= ascii('Z), c, {
         var local_c Char(c)
@@ -429,27 +355,3 @@ var upper (OUT c):{
 "abc fds 123" |> split(" ") |> stdout
 
 "f,d,s" |> split(",") |> map(upper) |> join("_") |> stdout
-
-"=== testing min ==="
-
-max(1, 2, 3, 4, 5, 6) |> stdout
-[1, 2, 3, 4, 5, 6] |> max' |> stdout
-1 .. 10 |> max' |> stdout
-
-"=== testing count ==="
-
-var is_even (n):{
-    var in (elem, container):{
-        var i 1
-        var found $false
-        until(():{found || i > len(container)}, ():{
-            found ||= container[#i] == elem
-            i += 1
-        })
-        found
-    }
-    Str(Int(n))[#-1] in "02468"
-}
-
-[1, 2, 3, 4, 5, 6] |> count(is_even) |> stdout
-1 .. 10 |> count(is_even) |> stdout
