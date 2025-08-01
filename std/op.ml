@@ -55,15 +55,15 @@ do_until := (do, cond):{
 
 
 var Pair (left, right):{
-    var dispatcher (msg_id):{
-        tern(msg_id == 0, left, {
-            tern(msg_id == 1, right, {
-                print("ERR unknown Pair dispatcher msg_id: `" + msg_id + "`")
+    var selector (id):{
+        tern(id == 0, left, {
+            tern(id == 1, right, {
+                print("ERR unknown Pair selector id: `" + id + "`")
                 exit(1)
             })
         })
     }
-    dispatcher
+    selector
 }
 
 var left (pair):{

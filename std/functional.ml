@@ -55,15 +55,15 @@ do_until := (do, cond):{
 
 
 var Pair (left, right):{
-    var dispatcher (msg_id):{
-        tern(msg_id == 0, left, {
-            tern(msg_id == 1, right, {
-                print("ERR unknown Pair dispatcher msg_id: `" + msg_id + "`")
+    var selector (id):{
+        tern(id == 0, left, {
+            tern(id == 1, right, {
+                print("ERR unknown Pair selector id: `" + id + "`")
                 exit(1)
             })
         })
     }
-    dispatcher
+    selector
 }
 
 var left (pair):{
@@ -415,7 +415,10 @@ var curry (fn):{
 var stdout print
 
 var subscript' {
-    curry(subscript)
+    var subscript' (nth, subscriptable):{
+        subscript(subscriptable, nth)
+    }
+    curry(subscript')
 }
 
 var foreach (OUT subscriptable, fn):{
@@ -503,16 +506,23 @@ var filter {
 
     var filter (pred, subscriptable):{
         var filter (pred, container):{
-            var is_list (x):{
-                var str Str(x)
-                len(str) > 0 && str[#1] == "[" && str[#-1] == "]"
+            "accepts as input Str or List"
+            var list? {
+                var list? (x):{
+                    var str? {
+                        len(Str(x + '!)) == len(Str(x)) + 1
+                    }
+                    not(str?)
+                }
+                list?(container)
             }
 
-            var res tern(is_list(container), [], "")
+            var res tern(list?, [], "")
             foreach(1 .. len(container), (nth):{
                 pred(container[#nth]) && {
-                    is_list(container) && {res += [container[#nth]]}
-                    is_list(container) || {res += container[#nth]}
+                    !tern(list?, {res += container[#nth]}, {
+                        res += [container[#nth]]
+                    })
                 }
             })
             res
