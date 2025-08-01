@@ -560,6 +560,15 @@ var reduce {
     curry(reduce)
 }
 
+var compose (fn1, fn2, fns...):{
+    var compose (fn1, fn2):{
+        fn1
+        fn2
+        (x):{fn2(fn1(x))}
+    }
+    reduce(compose, fn1, List(fn2, fns...))
+}
+
 var split {
     var split (sep, str):{
         var res []

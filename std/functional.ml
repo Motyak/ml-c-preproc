@@ -561,6 +561,15 @@ var reduce {
     curry(reduce)
 }
 
+var compose (fn1, fn2, fns...):{
+    var compose (fn1, fn2):{
+        fn1
+        fn2
+        (x):{fn2(fn1(x))}
+    }
+    reduce(compose, fn1, List(fn2, fns...))
+}
+
 var split {
     var split (sep, str):{
         var res []
@@ -739,3 +748,11 @@ var upper (OUT c):{
 "abc fds 123" |> split(" ") |> stdout
 
 "f,d,s" |> split(",") |> map(upper) |> join("_") |> stdout
+
+"=== testing compose ==="
+
+var increment (x):{x + 1}
+var double (x):{x * 2}
+var inc_then_double compose(increment, double, double)
+
+inc_then_double(10) |> stdout
