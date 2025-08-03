@@ -34,8 +34,8 @@ var curry_fixed (fixedParams, fn):{
     curried
 }
 
-var curry (fn):{
-    curry_fixed(len(fn), fn)
+var curry (fn, args...):{
+    curry_fixed(len(fn), fn)(args...)
 }
 
 var stdout print
