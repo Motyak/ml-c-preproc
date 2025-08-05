@@ -44,7 +44,7 @@ var <= (a, b, varargs...):{
     var rhs next(otherArgs)
     do_until(():{
         var rhs' some(rhs)
-        !tern(lhs > rhs' || lhs == rhs', {gt := $true}, {
+        tern(lhs > rhs', {gt := $true}, {
             lhs := rhs'
             rhs := next(otherArgs)
         })
