@@ -1,0 +1,23 @@
+#pragma once
+
+var putchar (c):{
+    putstr(Char(c))
+}
+
+var putline (x):{
+    print(x)
+}
+
+var getlines ():{
+    var lines []
+    var line getline()
+    until(():{line == $nil}, ():{
+        lines += [line]
+        line := getline()
+    })
+    lines
+}
+
+var stdin ():{
+    slurpfile("/dev/stdin")
+}
